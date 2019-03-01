@@ -1,4 +1,6 @@
 const express = require('express');
+const bodyParser= require('body-parser')
+
 const proxy = require('http-proxy-middleware')
 const path = require('path');
 const fs = require('fs'),
@@ -7,6 +9,19 @@ const fs = require('fs'),
 const mosca = require("mosca");
 
 let app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+var router = express.Router();
+//var irouter = express.Router();
+//irouter.use('/',function(req,res) {
+	//console.log('IROUTER')
+	//res.send('irouterRRR');
+//});
+
+router.use('/api/login',require('./src/react-express-oauth-login-system/signup'));
+router.use('/api/oauth',require('./src/react-express-oauth-login-system/oauth.js'));
+app.use(router);
 
 // An api endpoint that returns a short list of items
 app.get('/api/getList', (req,res) => {
@@ -24,8 +39,6 @@ app.get('/api/getList', (req,res) => {
 app.use('/', proxy({ target: 'http://localhost:3000' }))
 // production - Serve the static files from the React app
 //app.use(express.static(path.join(__dirname, 'client/build')));
-
-
 
 var options = {
     key: fs.readFileSync('./key.pem'),

@@ -7,7 +7,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+.warning {
+    color:red;
+    background-color:pink;
+    margin: 0.6em;
+    padding:0.6em;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

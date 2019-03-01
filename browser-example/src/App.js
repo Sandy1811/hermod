@@ -2,7 +2,14 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {HermodLogger,HermodReactLogger,HermodReactFlatLogger,HermodReactSatellite} from 'hermod-react-satellite';
+import LoginSystem from './react-express-oauth-login-system/LoginSystem'
+import {BrowserRouter as Router,Route,Link,Switch,Redirect} from 'react-router-dom'
 
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+//var config = require('./config.js')
 //HermodLogger,,HermodReactLogger,HermodReactFlatLogger,HermodReactSatellite
 //export default class App extends Component {
   //render() {
@@ -26,13 +33,19 @@ import {HermodLogger,HermodReactLogger,HermodReactFlatLogger,HermodReactSatellit
     //);
   //}
 //}
+let config = require('./config');
 
 
 class App extends Component {
     
     constructor(props) {
         super(props);
-        this.state={}
+        this.state={
+            waiting:false,
+            user:null,
+            token:null,
+		}
+        //this.state={}
         this.setLogData = this.setLogData.bind(this);
         //this.siteId = 'browser_'+parseInt(Math.random()*100000000,10);
         this.siteId = 'demo';
@@ -108,20 +121,58 @@ class App extends Component {
    setLogData(sites,messages,sessionStatus,sessionStatusText,hotwordListening,audioListening) {
         this.setState( this.state );
    };
+       
+    
+    allowUser(user) {
+		return true;
+        //if (user && user.username && user.username in config.allowed) {
+            //return true;
+        //} else {
+            //return false;
+        //}
+    };
+
+    startWaiting() {
+        if (!this.state.waiting) this.setState({waiting:true});
+        //this.waiting = true;
+    };
+    
+    stopWaiting() {
+        if (this.state.waiting)  this.setState({waiting:false});
+        //this.waiting = false;
+    };
+    
+    
+    onLogin(user,token) {
+       // console.log(['ONLOGIN',user,token]);
+        //that.props.loadMeekaFromLocalStorage();
+        this.setState({user:user,token:token});
+    };
+    
+    onLogout() {
+       // console.log(['ONLOGout']);
+        this.setState({user:null,token:null});
+    };
+     
           
                   
   render () {
     return (
-        <div>
-            <HermodReactSatellite logger={this.logger} siteId={this.siteId} intents={this.intents} />
-           
+        <Router><div>
+        
+			
+            <HermodReactSatellite position='topright' size='3em' logger={this.logger} siteId={this.siteId} intents={this.intents} />
+        <br/><br/><br/>
+           <LoginSystem  apiPath={config.apiPath} onLogin={this.onLogin} onLogout={this.onLogout} startWaiting={this.startWaiting} stopWaiting={this.stopWaiting} allowUser={this.allowUser} >
+            </LoginSystem>
+        
              <br/><br/><br/><br/><br/><br/><br/>
              <hr/>
             <HermodReactLogger logger={this.logger} {...this.logger.state} siteId={null}/>
             <hr/>
             <HermodReactFlatLogger logger={this.logger} {...this.logger.state} siteId={null}/>
             
-        </div>
+        </div></Router>
     )
     
 	}
