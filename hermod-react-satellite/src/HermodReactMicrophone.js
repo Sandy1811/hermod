@@ -462,7 +462,7 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
   
     let inputStyle={marginBottom:'0.5em',fontSize:'0.9em'};
     let config = this.props.config;
-    return <div id="hermodreactmicrophone" style={{zIndex:'9999'}}>
+    return <div id="hermodreactmicrophone"   style={{zIndex:'9999'}}>
         {(!this.state.activated) && <span  onClick={this.activate}>{micOnIcon}</span>} 
         
         {(this.state.activated && this.state.sending) && <span onTouchStart={this.showConfig}  onTouchEnd={this.clearConfigTimer}   onMouseDown={this.showConfig} onMouseUp={this.clearConfigTimer} onContextMenu={this.showConfigNow} onClick={this.stopRecording}>{micOffIcon}</span>} 
@@ -478,7 +478,7 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
         <div id="audio"></div>
       
       </div>
-    
+     
   }
 }
 

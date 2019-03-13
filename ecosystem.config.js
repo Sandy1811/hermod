@@ -19,6 +19,13 @@ module.exports = {
   }
   ,
   {
+    name: 'httpsredirect',
+    script: 'https-redirect -p 80',
+        cwd: './browser-example'
+
+  }
+  ,
+  {
     name: 'browser-example',
     script: 'npm start',
 	cwd: './browser-example'

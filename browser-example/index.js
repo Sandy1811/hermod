@@ -9,16 +9,13 @@ const fs = require('fs'),
 const mosca = require("mosca");
 
 let app = express();
+// allow self generated certs
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-var router = express.Router();
-//var irouter = express.Router();
-//irouter.use('/',function(req,res) {
-	//console.log('IROUTER')
-	//res.send('irouterRRR');
-//});
 
+var router = express.Router();
 router.use('/api/login',require('./src/react-express-oauth-login-system/signup'));
 router.use('/api/oauth',require('./src/react-express-oauth-login-system/oauth.js'));
 app.use(router);

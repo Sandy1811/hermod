@@ -8,6 +8,7 @@ import {BrowserRouter as Router,Route,Link,Switch,Redirect} from 'react-router-d
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+let config = require('./config');
 
 //var config = require('./config.js')
 //HermodLogger,,HermodReactLogger,HermodReactFlatLogger,HermodReactSatellite
@@ -33,7 +34,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
     //);
   //}
 //}
-let config = require('./config');
 
 
 class App extends Component {
@@ -144,7 +144,7 @@ class App extends Component {
     
     
     onLogin(user,token) {
-       // console.log(['ONLOGIN',user,token]);
+        console.log(['ONLOGIN',user,token]);
         //that.props.loadMeekaFromLocalStorage();
         this.setState({user:user,token:token});
     };
