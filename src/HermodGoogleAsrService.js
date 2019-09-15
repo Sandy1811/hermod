@@ -115,18 +115,18 @@ class HermodGoogleAsrService extends HermodService  {
 	   
     startMqttListener(siteId) {
 		let that = this;
-		console.log('start asr listen1')
+		//console.log('start asr listen1')
 		
 		let detector = this.getDetector(siteId);
 		// mqtt to stream - pushed to when audio packet arrives
 			
 		this.mqttStreams[siteId] =  new Wav.Writer();
 	    this.mqttStreams[siteId].pipe(detector)
-	   // this.setupTimeout(siteId)
+	    this.setupTimeout(siteId)
     }
 	
 	stopMqttListener(siteId) {
-		console.log('stop asr listen1')
+		//console.log('stop asr listen1')
 		let that = this;
 		if (this.callbackIds.hasOwnProperty(siteId)) {
 			this.callbackIds[siteId].map(function(callbackId) {
@@ -136,7 +136,7 @@ class HermodGoogleAsrService extends HermodService  {
 	}
 	
 	onAudioMessage(topic,siteId,buffer) {
-		console.log('on audio')
+		//console.log('on audio')
 		let that = this;
 		if (this.mqttStreams.hasOwnProperty(siteId)) {
 			// push into stream buffers for the first time (and start timeout)
@@ -167,24 +167,23 @@ class HermodGoogleAsrService extends HermodService  {
 	}	
 	
 	setupTimeout(siteId) {
-		return;
 		let that = this;
 		console.log('CREATE TIMEOUT '+siteId)
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 		that.asrTimeouts[siteId] = setTimeout(function() {
 			console.log(['TIMEOUT FORCE END '+siteId,that.failCounts[siteId]])
-			if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;
-			that.failCounts[siteId]++;
-			if (that.failCounts[siteId] <= that.props.maxFails) {
-				that.sendMqtt('hermod/'+siteId+'/asr/restarted',{id:that.dialogIds[siteId]});
-				// restart asr
-				that.stopMqttListener(siteId);
-				that.startMqttListener(siteId);
-			} else {
+			//if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;
+			//that.failCounts[siteId]++;
+			//if (that.failCounts[siteId] <= that.props.maxFails) {
+				//that.sendMqtt('hermod/'+siteId+'/asr/restarted',{id:that.dialogIds[siteId]});
+				//// restart asr
+				//that.stopMqttListener(siteId);
+				//that.startMqttListener(siteId);
+			//} else {
 				// too many fails, bail out
 				that.stopAsr(siteId)
 				that.sendMqtt('hermod/'+siteId+'/asr/fail',{id:that.dialogIds[siteId]});
-			}
+			//}
 		},config.services.HermodGoogleAsrService.timeout);
 	}
 	
@@ -196,14 +195,14 @@ class HermodGoogleAsrService extends HermodService  {
 
 	speechCallback(data,siteId)  {
 		let that = this;
-		console.log(['speech callback',JSON.stringify(data.results)])
+		//console.log(['speech callback',JSON.stringify(data.results)])
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 							
 		if (data.results[0] && data.results[0].alternatives[0] && data.results[0].alternatives[0].transcript.length > 0)  {
 			that.sendMqtt('hermod/'+siteId+'/asr/text',{id:that.dialogIds[siteId],text:data.results[0].alternatives[0].transcript});
 			that.stopMqttListener(siteId)
 		} else {
-			that.sendMqtt('hermod/'+siteId+'/asr/notext',{id:that.dialogIds[siteId]});
+			//that.sendMqtt('hermod/'+siteId+'/asr/notext',{id:that.dialogIds[siteId]});
 			
 			//if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;
 			//that.failCounts[siteId]++;
