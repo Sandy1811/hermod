@@ -1,11 +1,11 @@
 # Hermod Voice Protocol
 
-This project is a work in progress. 
-
-The main story described in [Hermod Protocol Proposal](https://docs.google.com/document/d/1EU3uZWF6ivpNVYWagF2iZFMIzPYy4urbJ-llSqrOE5k/edit#heading=h.sn64gkum70pi) from audio capture to RASA core routing and action server has been implemented. 
-
-You can talk to RASA !!
-
+This project has been restructured and updated (11/09/2019) in the following ways
+- For the best experience, google ASR and TTS are enabled by default. Credentials are now required to run the example. Deepspeech can be enabled by uncommenting lines in the Dockerfile and the config file. 
+- RASA and Duckling are now integrated as official docker hub images rather than custom compilations.
+- to simplify development, the hermod-react-satellite npm module has been removed in favor of placing all the React Component files into the webexample source directory.
+- CoreRouting and Action service integration with RASA has been changed 
+- hermod-nodejs has been renamed to src
 
 
 ## Overview
@@ -64,34 +64,25 @@ Other services include
 
 ## Quickstart
 
-Prerequisites: A Linux based Intel 64 bit OS with docker installed.
+Visit the google developer console  https://console.developers.google.com/apis/
 
+In a new or existing project, enable the Speech and Text to Speech APIs.
+
+Create and download service credentials.
+
+
+Download this repository
 ```
 git clone https://github.com/syntithenai/hermod.git
+```
+
+Edit the docker-compose.yml file to update the credentials volume mount to the location of your downloaded Google credentials.
+
+Start the suite
+```
 docker-compose up 
 ```
 
-The total image size including deepspeech and rasa modules and node_modules is 11G. !!!
-
-
-Using the docker image containing all dependancies installed is the easiest way to get started. 
-
-There are a number of dependancies with complex installations. See the Dockerfile for an example of installation on debian:stable.
-
-
-Once installed and running, the [pm2 process manager](http://pm2.keymetrics.io/) can be used to manage processes in the service suite.
-
-To gain shell access to the container
-```
-docker exec -it hermod_hermod_1 bash
-```
-
-Use pm2
-```
-pm2 start
-pm2 logs
-pm2 restart all
-```
 
 
 This package comes with an example model but to do something useful you will want to build your own nlu vocabulary and core routing stories and actions.
@@ -103,50 +94,15 @@ See [The RASA website](http://rasa.com)
 
 Be sure to give the suite sufficient time to allow all services to start (watch the logs)
 
-Open [https://localhost](https://localhost) and click the microphone to talk.
+Open [https://localhost:3000](https://localhost:3000) and click the microphone to talk.
 
-Try say "my name is david"
+Try say "hello"
 
-After the service replies "hi david nice to meet you", it will restart the microphone to listen for you next command
-Then ...
-Try say "tell me a joke" and the service replies "this is a joke" and stops the microphone.
-
-The first attempt may be problematic (especially from non SSD drives) as the service starts and the NLU model loads on first request. Subsequent conversations work fine.
-
-
-A [full list of intents](https://github.com/syntithenai/hermod/blob/master/rasa/joke/data/nlu_data.md) and [Sample story training data](https://github.com/syntithenai/hermod/blob/master/rasa/joke/data/stories.md) is available in the source code.
-
-
-To track the conversation progress
+The user interface shows a log of messages sent. It is also possible to use mqtt_sub to subscribe to relevenant messages on the mqtt bus.
 
 ```
 mqtt_sub -h localhost -v -t 'hermod/+/asr/+' -t 'hermod/+/nlu/+' -t 'hermod/+/dialog/+' -t 'hermod/+/hotword/+' -t 'hermod/+/intent' -t 'hermod/+/action' -t 'hermod/+/action/#' -t 'hermod/+/core/#' -t 'hermod/+/tts/#' -t 'hermod/+/speaker/started' -t 'hermod/+/speaker/finished'
 ```
-
-If the hermod process is the first to gain access and lock the microphone it is possible to trigger standalone mode where audio is captured directly from the sound card. Try the hotword "Smart Mirror" or "Snowboy".
-
-
-## Docker Quickstart
-
-As mentioned above, docker-compose is the easiest way to get started. It provides an example of using pulse audio to allow both the local audio and browser audio to work at the same time.
-Edit docker-compose.yml and update the pulseaudio host and path to cookie.
-Install and run paprefs and enable network access to local audio hardware.
-
-A Dockerfile build file is included that incorporates the deepspeech model and installed dependancies. The official build is available on Docker hub. Running the image requires parameters to allow access to sound hardware and expose network mqtt and web.
-
-```docker run -v /dev/snd:/dev/snd -p 1883:1883 -p 3000:3000 -p 9001:9001  --privileged -it syntithenai/hermod bash```
-
-Including volume  mounts so changes in hermod-* can be reflected in app. [!! CHANGE PATHS FOR YOUR SITE]
-```
-docker run -v /projects/hermod/browser-example:/usr/src/app/browser-example -v /projects/hermod/hermod-nodejs:/usr/src/app/hermod-nodejs -v /projects/hermod/hermod-react-satellite:/usr/src/app/hermod-react-satellite -v /dev/snd:/dev/snd -p 1883:1883 -p 3000:3000  -p 9001:9001 --privileged -it syntithenai/hermod bash
-```
-
-[To my knowledge] Docker on windows does not support access to audio hardware.
-https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
-
-OSX seems to support pulseaudio
-http://macappstore.org/pulseaudio/
-
 
 
 
@@ -263,6 +219,36 @@ The MQTT server authentication plugin can be initialised with a list of allowed 
 To secure messages in transit, it is possible to configure the MQTT server to encrypt messages or perhaps easier to only allow access via secure websockets.
 
 For a standalone device, network access to the MQTT server is prevented by a firewall or virtual private network and authentication is not required.
+
+
+
+
+## Audio Setup
+
+By default, the suite does not require access to the audio hardware and relies on a web browser to fill the Speaker and Microphone services.
+
+It is also possible to run the suite with direct access to the hardware audio device and include those services if for example you were building a standalone Alexa like device.
+
+The docker-compose file provides an commented example of using pulse audio to allow both the local audio and browser audio to work at the same time on a Linux Desktop.
+Edit docker-compose.yml and update the pulseaudio host and path to cookie.
+Install and run paprefs and enable network access to local audio hardware.
+
+A Dockerfile build file is included that incorporates the deepspeech model and installed dependancies. The official build is available on Docker hub. Running the image requires parameters to allow access to sound hardware and expose network mqtt and web.
+
+```docker run -v /dev/snd:/dev/snd -p 1883:1883 -p 3000:3000 -p 9001:9001  --privileged -it syntithenai/hermod bash```
+
+Including volume  mounts so changes in hermod-* can be reflected in app. [!! CHANGE PATHS FOR YOUR SITE]
+```
+docker run -v /projects/hermod/browser-example:/usr/src/app/browser-example -v /projects/hermod/hermod-nodejs:/usr/src/app/hermod-nodejs -v /projects/hermod/hermod-react-satellite:/usr/src/app/hermod-react-satellite -v /dev/snd:/dev/snd -p 1883:1883 -p 3000:3000  -p 9001:9001 --privileged -it syntithenai/hermod bash
+```
+
+[To my knowledge] Docker on windows does not support access to audio hardware.
+https://www.freedesktop.org/wiki/Software/PulseAudio/Ports/Windows/Support/
+
+OSX seems to support pulseaudio
+http://macappstore.org/pulseaudio/
+
+
 
 
 ## Hermod Protocol Reference

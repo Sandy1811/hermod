@@ -1,5 +1,105 @@
 version: '2'
 services:
+    ## ===========================================================================================   
+    ## HERMOD VOICE SERVICES SUITE
+    ## ===========================================================================================   
+  hermod:
+    build: ./
+    #image: encounterai-hermod
+    # volume mounts for development
+    volumes:
+      - ./:/usr/src/app
+      #  mount source for development
+      #GOOGLE_APPLICATION_CREDENTIALS=/home/stever/hermod-1548488627033-bdeb0a01d824.json
+      - /home/stever/hermod-1548488627033-bdeb0a01d824.json:/credentials.json
+      # direct sound card access        
+      #- /dev/snd:/dev/snd
+      # Deepspeech Models
+      #- ./deepspeech-models:/usr/src/app/deepspeech-models
+      # Use PULSE
+      #- ./pulseaudio/asound-pulse.conf:/etc/asound.conf
+      #- ./pulseaudio/client.conf:/etc/pulse/client.conf
+      # PULSE COOKIE FROM HOST
+      #- /home/stever/.config/pulse/cookie:/tmp/cookie
+    #ports:
+        # expose action server for development
+        # - 5055:5055  
+        
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
+      #- RASA_SERVER=http://rasa:5005
+      #- ALLOWED_SITES=default
+      #- MQTT_SERVER=ws://mosquitto:9001
+      #- MQTT_USER=???
+      #- MQTT_PASSWORD=???
+      #- PULSE_SERVER: 192.168.1.200
+      #- PULSE_COOKIE: /tmp/cookie
+    restart: always
+    #==========================================================================================
+    # MQTT MESSAGING QUEUE 
+    # TODO ssl, auth
+    # ===========================================================================================
+  mosquitto:
+    image: toke/mosquitto
+    restart: always
+    ports:
+        - 1883:1883
+        # mqtt web sockets 
+        - "9001:9001"
+ 
+    # ==========================================================================================
+    # WEB EXAMPLE CLIENT 
+    # ===========================================================================================
+     
+  webexample:
+    build:
+      context: ./webexample
+    restart: always
+    volumes:
+      - "./webexample:/usr/src/app/"
+    ports:
+      - "3000:3000"
+    
+    # ==========================================================================================
+    # RASA 
+    # ===========================================================================================
+  rasa:
+    image: rasa/rasa:latest-full
+    restart: always
+    volumes:
+      # rasa model folder
+      - ./rasa:/app
+    entrypoint: rasa run --enable-api
+    # exposed for development, in production hermod sits in front of rasa so close the port
+    ports:
+        - 5005:5005
+   
+     # ==========================================================================================
+    # RASA DUCKLING 
+    # ===========================================================================================
+  #duckling:
+    #image: rasa/duckling
+    #restart: always
+ 
+ 
+ 
+ 
+ 
+     # RASA SETUP
+     # docker run -v $(pwd)/rasa:/app rasa/rasa init --no-prompt
+     # TEST
+     # docker run -it -v $(pwd)/rasa:/app rasa/rasa shell       
+     # TRAINING
+     # docker run   -v $(pwd):/app   rasa/rasa:latest-full   train     --domain domain.yml     --data data     --out models
+
+
+
+
+
+    # ==========================================================================================
+    # AUTOMATIC SSL for web 
+    # ===========================================================================================
+ 
   #nginxproxy:
     #image: jwilder/nginx-proxy
     #container_name: nginx-proxy
@@ -31,45 +131,9 @@ services:
       #- /etc/nginxcerts:/etc/nginx/certs
       #- /var/docker/nginxproxy/vhosts:/etc/nginx/vhost.d
       #- /var/www:/usr/share/nginx/html
-
-#VIRTUAL_HOST: hermod.syntithenai.com
+    #environment:
+          #VIRTUAL_HOST: hermod.syntithenai.com
           #VIRTUAL_PORT: 3000
           #LETSENCRYPT_HOST: hermod.syntithenai.com
           #LETSENCRYPT_EMAIL: stever@syntithenai.com
-          
-   
-    ## ===========================================================================================   
-    ## HERMOD VOICE SERVICES SUITE
-    ## ===========================================================================================   
-  
-  hermod:
-        #build: ./
-        image: syntithenai/hermod
-        restart: always
-        #privileged: true
-        entrypoint: "/usr/src/app/hermod-nodejs/pm2start.sh"
-        environment:
-          PULSE_SERVER: 192.168.1.200
-          PULSE_COOKIE: /tmp/cookie
-        ports:
-           # web
-          - "80:80"
-          - "443:443"
-            # mqtt (debug) - disable for production
-          #- "1883:1883"
-            # mqtt web sockets 
-          #- "9001:9001"
-        # on your linux desktop install paprefs and enable network access to local sound devices 
-        # update IP below to your machine
-        volumes:
-            #- /dev/snd:/dev/snd
-            # HOST MOUNTS FOR DEVELOPMENT
-            - ./hermod-nodejs/config.js:/usr/src/app/hermod-nodejs/config.js
-            #- ./hermod-react-satellite:/usr/src/app/hermod-react-satellite
-            #- ./browser-example:/usr/src/app/browser-example
-            # Use PULSE
-            - ./pulseaudio/asound-pulse.conf:/etc/asound.conf
-            - ./pulseaudio/client.conf:/etc/pulse/client.conf
-            # PULSE COOKIE FROM HOST
-            - /home/stever/.config/pulse/cookie:/tmp/cookie
-    
+      
