@@ -28,14 +28,14 @@ class HermodDialogManagerService extends HermodService  {
 					let callbacks = {}
 					callbacks['hermod/'+siteId+'/tts/finished'] = function() {
 						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId,models: that.dialogs[dialogId].asrModels})
+						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId})
 					}
 					// automatic cleanup after single message with true parameter
 					that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
 					that.sendMqtt('hermod/'+siteId+'/tts/say',{id:dialogId,text:that.props.welcomeMessage})
 				} else { 
 					that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-					that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId,models:that.dialogs[dialogId].asrModels})
+					that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId})
 				}
 		}
 		function startNlu(siteId,payload) {
@@ -45,8 +45,8 @@ class HermodDialogManagerService extends HermodService  {
 				//that.sendMqtt('hermod/'+siteId+'/hotword/stop',{})
 				that.sendMqtt('hermod/'+siteId+'/microphone/stop',{})
 				that.sendMqtt('hermod/'+siteId+'/dialog/started',{id:dialogId})
-				that.sendMqtt('hermod/'+siteId+'/asr/stop',{id:dialogId,models:that.dialogs[dialogId].asrModels})
-				that.sendMqtt('hermod/'+siteId+'/nlu/parse',{id:dialogId,models:that.dialogs[dialogId].nluModels,text:payload.text,confidence:payload.confidence})
+				that.sendMqtt('hermod/'+siteId+'/asr/stop',{id:dialogId})
+				that.sendMqtt('hermod/'+siteId+'/nlu/parse',{id:dialogId,text:payload.text,confidence:payload.confidence})
 		}
 		
         let eventFunctions = {
@@ -90,13 +90,13 @@ class HermodDialogManagerService extends HermodService  {
 						let callbacks = {}
 						callbacks['hermod/'+siteId+'/tts/finished'] = function() {
 							that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-							that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id,models: that.dialogs[payload.id].asrModels})
+							that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
 						}
 						// automatic cleanup after single message with true parameter
 						that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)						
 					} else {
 						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id,models: that.dialogs[payload.id].asrModels})
+						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
 					}
 				} else {
 					console.error('missing id in dialog continue')
@@ -127,7 +127,7 @@ class HermodDialogManagerService extends HermodService  {
 					let callbacks = {}
 					callbacks['hermod/'+siteId+'/tts/finished'] = function() {
 						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id,models: that.dialogs[payload.id] ? that.dialogs[payload.id].asrModels : null})
+						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
 					}
 					// automatic cleanup after single message with true parameter
 					that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
@@ -154,7 +154,7 @@ class HermodDialogManagerService extends HermodService  {
 					let callbacks = {}
 					callbacks['hermod/'+siteId+'/tts/finished'] = function() {
 						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId,models:  that.dialogs[payload.id] ? that.dialogs[dialogId].asrModels : ''})
+						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
 					}
 					// automatic cleanup after single message with true parameter
 					that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
