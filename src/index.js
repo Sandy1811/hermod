@@ -34,41 +34,37 @@ const bodyParser= require('body-parser')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const actions = {
-	action_welcome:function() {return {responses:[{text:'Hi, how can I help?'}]}},
-	action_eek:function() {},
-	action_dostuff:function() {
-		return {
-			"events": [
-			//{
-			//"event": "slot",
-			//"timestamp": 1559744410
-			//}
-			],
-			"responses": [
-			{
-			"text": "all done"
-			}
-			]
-		}
-	},
-	
-}
+const actions = config.actions
 
 const port = 5055
 app.get('/', (req, res) => {
   res.send('Hi from the action server')
 })
 app.post('*', (req, res) => {
-	console.log('ACTION HIT')
-	console.log(req.body);
+	//console.log('ACTION HIT') 
+	//console.log(req.body);
 	if (req.body && req.body.next_action) {
 		if (actions.hasOwnProperty(req.body.next_action)) {
-			res.send(actions[req.body.next_action](req.body))
+			// call action with tracker slots as parameters
+			console.log(['run action '+req.body.next_action,req.body.tracker.slots])
+			//if (actions[req.body.next_action].then) {
+				//console.log('promise action '+req.body.next_action)
+			  
+				actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {})).then(	function(message) {
+					console.log('promise action complete '+req.body.next_action)
+					res.send(message)
+				}) 	   
+			//} else {  
+				//console.log('non promise action '+req.body.next_action)
+			
+				//res.send(actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {})))
+			//}  
 		} else {
+			console.log('no such action '+req.body.next_action)
 			res.send({error:'no such action - '+req.body.next_action})
 		}
-	} else {
+	} else {   
+		console.log('no next action ')
 		res.send({error:'no such action - '+req.body.next_action})
 	}
 

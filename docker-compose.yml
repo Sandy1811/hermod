@@ -27,6 +27,8 @@ services:
         
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
+      - MONGODB=mongodb://hermod2:hermod@mongo/hermod
+      #root:example@
       #- RASA_SERVER=http://rasa:5005
       #- ALLOWED_SITES=default
       #- MQTT_SERVER=ws://mosquitto:9001
@@ -35,6 +37,37 @@ services:
       #- PULSE_SERVER: 192.168.1.200
       #- PULSE_COOKIE: /tmp/cookie
     restart: always
+  
+  
+    #==========================================================================================
+    # MONGODB TO SUPPORT DYNAMIC ACTIONS
+    # ===========================================================================================
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: hermod
+    # persistent database
+    volumes:
+      - "./docker-run/mongo_database:/data/db"
+      # init with sample data
+      - "./mongo_init:/docker-entrypoint-initdb.d/"
+    # expose mongo to local tools for development
+    ports:
+      - 27017:27017
+    
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+  
+  
     #==========================================================================================
     # MQTT MESSAGING QUEUE 
     # TODO ssl, auth
@@ -45,7 +78,7 @@ services:
     ports:
         - 1883:1883
         # mqtt web sockets 
-        - "9001:9001"
+        - 9001:9001
  
     # ==========================================================================================
     # WEB EXAMPLE CLIENT 

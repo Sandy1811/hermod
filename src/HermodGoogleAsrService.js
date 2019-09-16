@@ -168,10 +168,10 @@ class HermodGoogleAsrService extends HermodService  {
 	
 	setupTimeout(siteId) {
 		let that = this;
-		console.log('CREATE TIMEOUT '+siteId)
+		//console.log('CREATE TIMEOUT '+siteId)
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 		that.asrTimeouts[siteId] = setTimeout(function() {
-			console.log(['TIMEOUT FORCE END '+siteId,that.failCounts[siteId]])
+			//console.log(['TIMEOUT FORCE END '+siteId,that.failCounts[siteId]])
 			//if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;
 			//that.failCounts[siteId]++;
 			//if (that.failCounts[siteId] <= that.props.maxFails) {

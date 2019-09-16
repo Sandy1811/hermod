@@ -1,5 +1,3 @@
-## intent:about_developers
-- who made this software
 
 ## intent:affirm
 - yes
@@ -32,6 +30,12 @@
 - goodbye
 - see you around
 - see you later
+- cancel
+- quit
+- quit now
+- get out of here
+- stop this
+
 
 ## intent:greet
 - hey
@@ -80,3 +84,45 @@
 - tell me about [mnemo](mnemotopic)
 - tell me about [mnemo's library](mnemotopic)
 - what is [staged review](mnemotopic)
+- tell me about [birds](discoverytopic)
+- who is [mnemo](discoverytopic)
+- what is [staged review](discoverytopic)
+- what are [mnemonics](discoverytopic)
+- what kinds of [mnemonics](discoverytopic) are there
+- why use [mnemonics](discoverytopic)
+- tell me about [mnemo](discoverytopic)
+
+## intent:what_can_i_say
+- what can i say
+- help 
+- what can i do
+- what should i do
+- help me
+
+
+## lookup:discoverytopic   <!-- lookup table list -->
+- Birds For Beginners
+- History for beginners
+- Australian Plants
+- geology
+- maths
+- science
+- history
+- english
+- birds
+- beginners
+
+
+## lookup:mnemotopic   <!-- lookup table list -->
+- website
+- mnemonics
+- staged review
+
+## synonym:website
+- mnemos library
+- this website
+- the website
+- yourself
+
+## synonym:mnemonics
+- memory aids

@@ -1,18 +1,11 @@
 %YAML 1.1
 ---
 actions:
-- action_welcome
-- action_nlufail
-- action_asrfail
 - action_discover
-- action_dostuff
 - action_review
 - action_stop_listening
-- action_tellmeabout
-- utter_about_developers
-- utter_about_mnemo
-- utter_about_mnemonics
-- utter_about_staged_review
+- action_tell_me_about
+- action_what_can_i_say
 - utter_cheer_up
 - utter_did_that_help
 - utter_discover
@@ -20,10 +13,9 @@ actions:
 - utter_greet
 - utter_happy
 - utter_iamabot
-- utter_review
-- utter_tell_me_about
 entities:
 - mnemotopic
+- discoverytopic
 intents:
 - tell_me_about
 - review
@@ -34,18 +26,15 @@ intents:
 - mood_great
 - mood_unhappy
 - bot_challenge
-- about_developers
 - discover
+slots:
+  mnemotopic:
+    type: text
+  discoverytopic:
+    type: text
+
 templates:
-  utter_about_developers:
-  - text: That'd be Steven and Trevor.
-  utter_about_mnemo:
-  - text: Mnemo is software to help you learn.
-  utter_about_mnemonics:
-  - text: Mnemonics are memory aids. They can take many forms from ACRONYMS to poems. Finding colorful associations in the topics you are trying to memorise is powerful
-  utter_about_staged_review:
-  - text: Memory fails over time. Review makes facts stick.
-  utter_cheer_up:
+    utter_cheer_up:
   - image: https://i.imgur.com/nGF1K8f.jpg
     text: 'Here is something to cheer you up:'
   utter_did_that_help:
@@ -60,11 +49,4 @@ templates:
   - text: Great, carry on!
   utter_iamabot:
   - text: I'm a bot powered by RASA
-  utter_review:
-  - text: I can't review yet. Check again soon.
-  utter_tell_me_about:
-  - text: I can't do that yet
-  utter_nlufail:
-    - text: I couldn't understand that. Try again.
-  utter_asrfail:
-    - text: I couldn't hear that properly. Could you say it again.
+ 

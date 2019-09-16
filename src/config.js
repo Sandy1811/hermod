@@ -1,3 +1,4 @@
+const actions = require(process.env.ACTIONS_FILE ? process.env.ACTIONS_FILE :'../rasa/actions.js')
 var config={
 	// mqtt details
 	username:process.env.MQTT_USER ? process.env.MQTT_USER: 'admin',
@@ -9,7 +10,7 @@ var config={
 	
 	// only respond to message from these sites
 	allowedSites:process.env.ALLOWED_SITES ? process.env.ALLOWED_SITES :'default',
-	
+	actions: actions,
 	services: {
 		// server audio 
 		// disabled in favor of web client audio server (see webexample)
@@ -35,7 +36,7 @@ var config={
 		HermodDialogManagerService: {
 			// start audio streaming on load and restart to support server hotword
 			enableHotword: false,
-			welcomeMessage: 'Hi, how can I help?',
+			welcomeMessage: 'Hi',
 			maxAsrFails:5,
 			maxNluFails: 2,
 			asrFailMessage:"Sorry, I couldn't hear that. Could you say it again.",

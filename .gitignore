@@ -12,5 +12,5 @@ duckling/stack*
 duckling/duckling
 duckling/duckling-*
 duckling/log
-
+docker-run/*
 out.log

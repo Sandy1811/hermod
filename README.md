@@ -2,10 +2,17 @@
 
 This project has been restructured and updated (11/09/2019) in the following ways
 - For the best experience, google ASR and TTS are enabled by default. Credentials are now required to run the example. Deepspeech can be enabled by uncommenting lines in the Dockerfile and the config file. 
-- RASA and Duckling are now integrated as official docker hub images rather than custom compilations.
+- RASA is now integrated as an official docker hub image rather than custom compilations.
 - to simplify development, the hermod-react-satellite npm module has been removed in favor of placing all the React Component files into the webexample source directory.
-- CoreRouting and Action service integration with RASA has been changed 
-- hermod-nodejs has been renamed to src
+
+
+- CoreRouting and Action service integration with RASA has been finished/fixed. Messages from the action server via the execute endpoint are sent as a sequence of TTS messages. action_stop_listening turns off the microphone otherwise the predict run loop continues until action_listen. 
+- ActionService as part of the MQTT hermod protocol has been removed in favor of an action API server that is triggered by RASA core.
+ 
+- use environment variables in docker-compose.yml for important config settings.
+- support serverHotwordEnabled mode so Microphone audio streaming continues even when paused. Silence detection is enabled however it's really only intended to be used on local networks.
+- rough implementation of UI cards. Where RASA messages include images, buttons, links.
+
 
 
 ## Overview
@@ -856,4 +863,5 @@ https://github.com/RasaHQ/conversational-ai-workshop-18
 		- hotword
 		- slots, intents, stories
 	- documentation for building voice enabled web apps with node and react
+
 
