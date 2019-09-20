@@ -29,6 +29,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 	resetTracker(topic,siteId,payload) {
 		//console.log('RESTART TRACKER');
 		let that =this;
+		return;
 		//that.sendMqtt('hermod/'+siteId+'/core/reset',{id:payload.id});
 		//console.log('RESTART')	  
 		axios.post(that.props.coreServer+"/conversations/"+siteId+"/tracker/events",{

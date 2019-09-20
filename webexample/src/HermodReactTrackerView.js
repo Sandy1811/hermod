@@ -21,7 +21,7 @@ export default class HermodReactTrackerView extends HermodReactComponent  {
 					if (payload && payload.tracker && payload.tracker.events) {
 						final = payload.tracker.events.map(function(event) {return {event:event.event,name:event.name,text:event.text}})
 					}
-					that.setState({tracker:final});
+					that.setState({slots:payload.tracker.slots,tracker:final});
 					
                }
             }
@@ -37,7 +37,7 @@ export default class HermodReactTrackerView extends HermodReactComponent  {
 
 
     render() {
-        return <pre id="Hermodreacttts" >{JSON.stringify(this.state.tracker,null,1)}</pre>
+        return <div><h1>Slots</h1>{JSON.stringify(this.state.slots)}<h1>Tracker</h1><pre id="Hermodreacttts" >{JSON.stringify(this.state.tracker,null,1)}</pre></div>
     };
 
   

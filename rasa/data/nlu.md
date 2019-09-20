@@ -1,16 +1,10 @@
-
+<!-- GENERAL USE INTENTS -->
 ## intent:affirm
 - yes
 - indeed
 - of course
 - that sounds good
 - correct
-
-## intent:bot_challenge
-- are you a bot?
-- are you a human?
-- am I talking to a bot?
-- am I talking to a human?
 
 ## intent:deny
 - no
@@ -19,11 +13,6 @@
 - don't like that
 - no way
 - not really
-
-## intent:discover
-- discover something new
-- discover a new topic
-- discover the topic [birds for beginners](discoverytopic)
 
 ## intent:goodbye
 - bye
@@ -37,86 +26,106 @@
 - stop this
 
 
-## intent:greet
-- hey
-- hello
-- hi
-- good morning
-- good evening
-- hey there
-- hi
-
-## intent:mood_great
-- perfect
-- very good
-- great
-- amazing
-- wonderful
-- I am feeling very good
-- I am great
-- I'm good
-
-## intent:mood_unhappy
-- sad
-- very sad
-- unhappy
-- bad
-- very bad
-- awful
-- terrible
-- not very good
-- extremely sad
-- so sad
-
-## intent:review
-- start a review
-- review the topic [birds for beginners](discoverytopic)
-- start a review
-
+<!-- WIKI QUERY INTENTS -->
 ## intent:tell_me_about
-- who is [mnemo](mnemotopic)
-- what is [staged review](mnemotopic)
-- what are [mnemonics](mnemotopic)
-- what kinds of [mnemonics](mnemotopic) are there
-- why use [mnemonics](mnemotopic)
-- tell me about [mnemonics](mnemotopic)
-- what is [mnemonics](mnemotopic)
-- tell me about [mnemo](mnemotopic)
-- tell me about [mnemo's library](mnemotopic)
-- what is [staged review](mnemotopic)
-- tell me about [birds](discoverytopic)
-- who is [mnemo](discoverytopic)
-- what is [staged review](discoverytopic)
-- what are [mnemonics](discoverytopic)
-- what kinds of [mnemonics](discoverytopic) are there
-- why use [mnemonics](discoverytopic)
-- tell me about [mnemo](discoverytopic)
-
-## intent:what_can_i_say
-- what can i say
-- help 
-- what can i do
-- what should i do
-- help me
+- who is [Paul Simon](topic)
+- what is [Anatomy](topic)
+- what are [Earthworms](topic)
+- why use [Antibiotics](topic)
+- tell me about [Sunspots](topic)
+- tell me about [astronomy](topic)
 
 
-## lookup:discoverytopic   <!-- lookup table list -->
-- Birds For Beginners
-- History for beginners
-- Australian Plants
-- geology
-- maths
-- science
-- history
-- english
-- birds
-- beginners
+## intent:tell_me_more
+- tell me more
+- more information 
+- more info please
+- tell me more about it
+- tell me more about them
+
+## intent:tell_attribute
+- what is the [capital city](attribute:capital) of [Paris](topic)
+- what is the [population](attribute) of [Canberra](topic)
+- what is the [capital](attribute) of [Uganda](topic)
+- what is the [capital](attribute) of [Australia](topic)
+- what is the [capital](attribute)
+- what is the [population census](attribute)
+- what is the [population](attribute:population census)
+
+## lookup:attribute
+- anthem
+- country
+- common_name
+- national anthem
+- capital
+- coordinates
+- largest city
+- languages
+- demonym
+- religion
+- government type
+- population census
+- currency
+
+## intent:list_attributes
+- what facts do you know about this
+- what facts do you know about [astronomy](topic)
+- what attributes do you know about [spain](topic)
+- what properties do you know about [china](topic)
+- what attributes
+- give me the facts
+- give me the attributes
+- what facts do you know
+- what attributes do you know
+- give me the properties
+- what properties do you know
+
+## intent:show_me
+- show me the [leaderboard](pagetitle)
+- show me the [leaderboard](pagetitle) page
+- take me to the [leaderboard](pagetitle) page
+- show the [leaderboard](pagetitle)
+- navigate to the [leaderboard](pagetitle)
+
+## intent:define
+- define [cannibal](word)
+- what is the definition of [imagine](word)
+- what does [cannibal](word) mean
+- what is the meaning of [imagine](word)
+- dictionary lookup [imagine](word)
+- look in the dictionary for the word [imagine](word)
+- find [imagine](word) in the dictionary
+
+## intent:restart_dialog
+- reset the dialog
+- clear the tracker
+- reset the tracker
+
+## intent:reset_slots
+- forget the slots
+- clear the slots
+- reset the slots
 
 
-## lookup:mnemotopic   <!-- lookup table list -->
-- website
-- mnemonics
-- staged review
+## synonym:home
+- the home page
+- the splash page
+- a list of topics
+- some topics
+
+## synonym:music search
+- music brains
+- musicbrainz
+
+## synonym:settings
+- user settings
+
+## synonym:profile
+- progress
+- user progress
+- my progress
+
+
 
 ## synonym:website
 - mnemos library
@@ -126,3 +135,33 @@
 
 ## synonym:mnemonics
 - memory aids
+
+## lookup:helptopic   <!-- lookup table list -->
+- website
+- mnemonics
+- staged review
+ 
+
+## lookup:pagetitle   <!-- lookup table list -->
+- home
+- profile
+- settings
+- plant search
+- animal search
+- music search
+- review
+- discovery
+- tags
+
+## lookup:topic
+- science
+- maths
+- computers
+- biology
+- australia
+- canberra
+- melbourne
+- england
+- japan
+- tokyo
+- china

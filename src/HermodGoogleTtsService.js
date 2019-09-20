@@ -22,6 +22,26 @@ class HermodGoogleTtsService extends HermodService  {
     }  
         
   
+  
+  //function sendLongTTSRecursive(messageParts,siteId,manager) {
+	//return new Promise(function(resolve,reject) {
+		//if (messageParts.length > 0) {
+			//let nextMessage = messageParts.shift()
+			//let callbacks = {}
+			//callbacks['hermod/'+siteId+'/tts/finished'] = function() {
+				//if (messageParts.length === 0) {
+					//resolve(textResponse(nextMessage)) 
+				//} else {
+					//sendLongTTSRecursive(messageParts,siteId,manager)
+				//}
+			//}
+			//// automatic cleanup after single message with true parameter
+			//manager.addCallbacks('TTS',callbacks,true)	
+			//manager.sendMqtt('hermod/'+siteId+'/tts/say',{text:nextMessage})
+		//}
+	//})
+//}
+  
 
    /**
      * Synthesise speech from text and send to to audio output
@@ -29,8 +49,11 @@ class HermodGoogleTtsService extends HermodService  {
     async say(text,siteId,payload) {
 		let that = this;
 		const client = new textToSpeech.TextToSpeechClient();
-		const ssml = '<speak>'+text+'</speak>';
+		// hack forcibly limit inside google limits (5000)
+		const ssml = text.slice(0,2400); //'<speak>'+text+'</speak>';
 		let audioContent= null;
+		
+		
 		if (this.audioCache.hasOwnProperty(text)) {
 			audioContent = this.audioCache[text]
 			// notify tts finished when speaker finishes playing

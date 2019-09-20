@@ -31,7 +31,7 @@ services:
       #root:example@
       #- RASA_SERVER=http://rasa:5005
       #- ALLOWED_SITES=default
-      #- MQTT_SERVER=ws://mosquitto:9001
+      - MQTT_SERVER=ws://mosquitto:9001
       #- MQTT_USER=???
       #- MQTT_PASSWORD=???
       #- PULSE_SERVER: 192.168.1.200
@@ -92,7 +92,9 @@ services:
       - "./webexample:/usr/src/app/"
     ports:
       - "3000:3000"
-    
+    environment:
+      - REACT_APP_MQTT_SERVER=ws://mosquitto:9001
+      
     # ==========================================================================================
     # RASA 
     # ===========================================================================================

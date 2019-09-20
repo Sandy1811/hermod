@@ -124,14 +124,14 @@ class HermodDialogManagerService extends HermodService  {
 				if (!that.asrFails[siteId]) that.asrFails[siteId] = 0;
 				that.asrFails[siteId]++;
 				if (that.asrFails[siteId] <= props.maxAsrFails) {
-					let callbacks = {}
-					callbacks['hermod/'+siteId+'/tts/finished'] = function() {
-						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
-						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
-					}
-					// automatic cleanup after single message with true parameter
-					that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
-					that.sendMqtt('hermod/'+siteId+'/tts/say',{id:payload.id,text:that.props.asrFailMessage})
+					//let callbacks = {}
+					//callbacks['hermod/'+siteId+'/tts/finished'] = function() {
+						//that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
+						//that.sendMqtt('hermod/'+siteId+'/asr/start',{id:payload.id})
+					//}
+					//// automatic cleanup after single message with true parameter
+					//that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
+					//that.sendMqtt('hermod/'+siteId+'/tts/say',{id:payload.id,text:that.props.asrFailMessage})
 				} else {
 					// bail out	
 					that.sendMqtt('hermod/'+siteId+'/dialog/end',{id:payload.id})

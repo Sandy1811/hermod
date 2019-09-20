@@ -48,9 +48,9 @@ app.post('*', (req, res) => {
 			// call action with tracker slots as parameters
 			console.log(['run action '+req.body.next_action,req.body.tracker.slots])
 			//if (actions[req.body.next_action].then) {
-				//console.log('promise action '+req.body.next_action)
-			  
-				actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {})).then(	function(message) {
+				console.log(['promise action '+req.body.next_action,JSON.stringify(req.body.tracker)])
+				// action parameters - tracker slots, mqttManager, siteId, complete tracker
+				actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {}),manager,config.siteId,req.body.tracker).then(	function(message) {
 					console.log('promise action complete '+req.body.next_action)
 					res.send(message)
 				}) 	   

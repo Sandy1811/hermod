@@ -1,52 +1,68 @@
-%YAML 1.1
----
+intents:
+  - tell_me_about
+  - tell_me_more
+  - tell_attribute
+  - list_attributes
+  - goodbye
+  - affirm
+  - deny
+  - define
+  - show_me
+  - restart_dialog
+  - reset_slots
+  
+  
+
 actions:
-- action_discover
-- action_review
 - action_stop_listening
 - action_tell_me_about
+- action_tell_attribute
+- action_list_attributes
 - action_what_can_i_say
-- utter_cheer_up
-- utter_did_that_help
-- utter_discover
+- action_define
+- action_tell_me_more
+- action_next_question
+- action_previous_question
+- action_show_me
 - utter_goodbye
-- utter_greet
-- utter_happy
-- utter_iamabot
-entities:
-- mnemotopic
-- discoverytopic
-intents:
-- tell_me_about
-- review
-- greet
-- goodbye
-- affirm
-- deny
-- mood_great
-- mood_unhappy
-- bot_challenge
-- discover
-slots:
-  mnemotopic:
-    type: text
-  discoverytopic:
-    type: text
+- utter_onto_it
+- utter_reset_slots
+- utter_restart
+- action_reset_slots
+- action_restart
 
+entities:
+- subject
+- helptopic
+- topic
+- attribute
+- pagetitle
+
+
+slots:
+  subject:
+    type: text
+  helptopic:
+    type: text
+  topic:
+    type: text
+  attribute:
+    type: text
+  pagetitle:
+    type: text
+          
 templates:
-    utter_cheer_up:
-  - image: https://i.imgur.com/nGF1K8f.jpg
-    text: 'Here is something to cheer you up:'
-  utter_did_that_help:
-  - text: Did that help you?
   utter_discover:
   - text: I can't do that yet
   utter_goodbye:
   - text: Bye
+  utter_restart:
+  - text: Restarting conversation fresh
+  utter_reset_slots:
+  - text: Resetting the slots
   utter_greet:
   - text: Hey! How are you?
-  utter_happy:
-  - text: Great, carry on!
-  utter_iamabot:
-  - text: I'm a bot powered by RASA
- 
+  utter_onto_it:
+  - text:  Just a sec.
+  - text:  Looking now.
+  - text:  I'll ask wikipedia.

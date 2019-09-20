@@ -7,6 +7,8 @@ export default class HermodReactConfig extends HermodReactComponent  {
 
     constructor(props) {
         super(props);
+        console.log('CONFIG PROPS')
+        console.log(props)
         if (!props.siteId || props.siteId.length === 0) {
             throw "Config must be configured with a siteId property";
         }
@@ -20,19 +22,19 @@ export default class HermodReactConfig extends HermodReactComponent  {
         this.resetConfig = this.resetConfig.bind(this);
     }  
     
-       /**
-     * Activate on mount if user has previously enabled.
-     */ 
-    componentDidMount() {
-        //this.initSpeechSynthesis.bind(this)();
-        this.loadSpeechSynthesisVoices.bind(this)();
+       ///**
+     //* Activate on mount if user has previously enabled.
+     //*/ 
+    //componentDidMount() {
+        ////this.initSpeechSynthesis.bind(this)();
+        //this.loadSpeechSynthesisVoices.bind(this)();
         
-        // if previously activated, restore microphone
-        //if (localStorage.getItem(this.appendUserId('Hermodmicrophone_enabled',this.props.user)) === 'true') {
-            //this.activate(false);
-        //}
+        //// if previously activated, restore microphone
+        ////if (localStorage.getItem(this.appendUserId('Hermodmicrophone_enabled',this.props.user)) === 'true') {
+            ////this.activate(false);
+        ////}
         
-    }
+    //}
        
     /**
      * Send Mqtt message to end the session immediately

@@ -23,8 +23,9 @@ export default class HermodReactSatellite extends Component  {
         this.setConfig = this.setConfig.bind(this);
         this.showConfig = this.showConfig.bind(this);
         this.hideConfig = this.hideConfig.bind(this);
+        this.setExitRedirect = this.setExitRedirect.bind(this);
         this.addInputGainNode = this.addInputGainNode.bind(this);
-         this.logger = props.logger ? props.logger : new HermodLogger(Object.assign({logAudio:true,setLogData:this.setLogData },props));
+        this.logger = props.logger ? props.logger : new HermodLogger(Object.assign({logAudio:true,setLogData:this.setLogData },props));
         this.state = {showConfig:false,config:{}};
         let configString = localStorage.getItem(this.appendUserId('Hermodmicrophone_config',props.user));
         let config = null;
@@ -42,7 +43,11 @@ export default class HermodReactSatellite extends Component  {
             localStorage.setItem(this.appendUserId('Hermodmicrophone_config',this.props.user),JSON.stringify(newConfig));
         }
     }  
- 
+  
+	  setExitRedirect(redirect) {
+		  this.setState({exitRedirect:redirect})
+	  }
+    
   
     appendUserId(text,user) {
         if (user && user._id) {
@@ -95,20 +100,26 @@ export default class HermodReactSatellite extends Component  {
     render() {
 		let position=this.props.position ? this.props.position  : 'top left'
         
-        return <div id ="Hermodreactsatellite" >
+        return <div id ="Hermodreactsatellite" > 
         
-
+{this.state.exitRedirect ? 'REDIRECT:'+this.state.exitRedirect : 'noredir' }
+		
+			<div style={{ zIndex:9999, position:'fixed', top:'8em',left:0}}>
+             <HermodReactDisplayService logger={this.logger}  siteId={this.siteId} navigateTo={this.setExitRedirect} />
+			</div>
+			
 		<HermodReactSpeaker {...this.props} logger={this.logger} siteId={this.siteId}  config={this.state.config} />
             
             <HermodReactMicrophone {...this.props} position={position} logger={this.logger} siteId={this.siteId} config={this.state.config} showConfig={this.showConfig} hideConfig={this.hideConfig} localHotword={true} addInputGainNode={this.addInputGainNode} />
+            
              <div style={{width:'100%',clear:'both',height:'8em'}}>&nbsp;</div>
-			<div style={{position:'fixed', width:'50%', float:'right'}}> <HermodReactDisplayService logger={this.logger} siteId={this.siteId}  /></div>
+			
+			
 			<HermodReactHotwordServer  logger={this.logger} siteId={this.siteId} config={this.getDefaultConfig()}/>
+			
 			<div style={{width:'50%', float:'right'}}> <HermodReactTrackerView logger={this.logger} siteId={this.siteId}  /></div>
            
-            <HermodReactFlatLogger logger={this.logger}  messages={this.logger.state.messages} siteId={null}/>
-            
-             
+          
            
           {this.state.showConfig && <div style={{width:'100%', zIndex:999999,backgroundColor:'white', position:'fixed', top:0,left:0, height:'700px'}}><HermodReactConfig  {...this.props}  setConfig={this.setConfig} configurationChange={this.setConfig} hideConfig={this.hideConfig} config={this.state.config} addInputGainNode={this.addInputGainNode} inputGainNodes={this.inputGainNodes} /></div>}
           
@@ -117,3 +128,5 @@ export default class HermodReactSatellite extends Component  {
   
   
 } 
+//   <HermodReactFlatLogger logger={this.logger}  messages={this.logger.state.messages} siteId={null}/>
+           
