@@ -97,6 +97,7 @@ export default class HermodReactComponent extends Component {
         if (text && text.length > 0) {
             payload.text = text;
         }
+        this.sendMqtt("hermod/"+siteId+"/asr/stop",payload);
         this.sendMqtt("hermod/"+siteId+"/dialog/end",payload);
     };
    

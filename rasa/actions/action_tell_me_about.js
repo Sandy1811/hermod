@@ -17,13 +17,13 @@ module.exports = function(param,mqttSubscriptionManager,siteId,tracker) {
 			// query wikipedia
 			} else {
 				// keep this up to date with nlu.md
-				const patterns = ["who is [*]",
-			"what is [*]",
-			"what are [*]",
-			"why use [*]",
-			"tell me about [*]"]
+				//const patterns = ["who is [*]",
+			//"what is [*]",
+			//"what are [*]",
+			//"why use [*]",
+			//"tell me about [*]"]
 							
-				let searchFor = param && param.topic && param.topic.length > 0 ? param.topic : utils.from_text_nlp_patterns(tracker,patterns)
+				let searchFor = param && param.topic && param.topic.length > 0 ? param.topic : '' //utils.from_text_nlp_patterns(tracker,patterns)
 				let slotSet={"event": "slot", "name": "topic", "value": searchFor}
 				if (searchFor && searchFor.length > 0)  {
 					wikitools.wikipediaLookup(searchFor).then(function(response) {
@@ -43,7 +43,23 @@ module.exports = function(param,mqttSubscriptionManager,siteId,tracker) {
 										resolve(utils.textResponse('The definition of '+searchFor+' is '+definition,[slotSet]))
 									} else {
 										// TODO fallback to google knowledge graph
-										resolve(utils.textResponse("I couldn't find any information about "+searchFor,[slotSet]))
+											fetch('https://kgsearch.googleapis.com/v1/entities:search?limit=1&key=AIzaSyDj5IgbuLmaoSrcNwBadk7ayEw2kfrNWaA&query='+searchFor)
+											.then(function(response) {
+												return response.json()
+											}).then(function(json) {
+												if (json.error) {
+													isError = true
+												}
+												console.log(json)
+												//if (json && json && json.itemListElement && json.itemListElement.length > 0) {
+													//resolve({key:'google',value:json.itemListElement})
+												//} else {
+													//resolve({key:'google',value:null})
+												//}
+												resolve(utils.textResponse("I couldn't find any information about "+searchFor,[slotSet]))
+											})
+										//}))
+										
 									}
 								})
 							}

@@ -115,10 +115,12 @@ export default class HermodReactSatellite extends Component  {
              <div style={{width:'100%',clear:'both',height:'8em'}}>&nbsp;</div>
 			
 			
-			<HermodReactHotwordServer  logger={this.logger} siteId={this.siteId} config={this.getDefaultConfig()}/>
 			
 			<div style={{width:'50%', float:'right'}}> <HermodReactTrackerView logger={this.logger} siteId={this.siteId}  /></div>
-           
+      
+      <hr/>
+           <HermodReactFlatLogger logger={this.logger}  messages={this.logger.state.messages} siteId={null}/>
+      
           
            
           {this.state.showConfig && <div style={{width:'100%', zIndex:999999,backgroundColor:'white', position:'fixed', top:0,left:0, height:'700px'}}><HermodReactConfig  {...this.props}  setConfig={this.setConfig} configurationChange={this.setConfig} hideConfig={this.hideConfig} config={this.state.config} addInputGainNode={this.addInputGainNode} inputGainNodes={this.inputGainNodes} /></div>}
@@ -128,5 +130,5 @@ export default class HermodReactSatellite extends Component  {
   
   
 } 
-//   <HermodReactFlatLogger logger={this.logger}  messages={this.logger.state.messages} siteId={null}/>
-           
+//  <HermodReactHotwordServer  logger={this.logger} siteId={this.siteId} config={this.getDefaultConfig()}/>
+			      

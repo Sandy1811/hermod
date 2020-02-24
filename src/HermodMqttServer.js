@@ -5,7 +5,7 @@ class HermodMqttServer {
 
     constructor(props) {
 		this.props = props;
-		 this.failCount = 0;
+		this.failCount = 0;
         this.mqttClient = null;
         this.sessionId = null;
         this.clientId = props.clientId ? props.clientId :  'client'+parseInt(Math.random()*100000000,10);
@@ -101,10 +101,17 @@ class HermodMqttServer {
     };
     
     sendAudioMqtt(destination,payload) {
+		console.log('SEND AUDIO')
+		console.log(destination)
+		console.log(payload)
 		 if (this.mqttClient) {
 			if (this.state.connected) {
 		 		this.mqttClient.publish(destination,payload)
+			} else {
+				console.log(['NOT CONNECTED',destination])
 			}
+		} else {
+			console.log(['NO CLIENT',destination])
 		}
     };
     

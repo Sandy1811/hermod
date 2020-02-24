@@ -68,12 +68,15 @@ const wikiTools = {
 		return new Promise(function(resolve,reject) {
 			try {
 				wtf.fetch(word).then(doc => {
-					let infoboxes = doc.infoboxes();
-					if (infoboxes && infoboxes.length > 0) {
-						resolve({data:infoboxes[0]});
-					} else {
-						resolve({data:{}})
-					}
+					if (doc) {
+						let infoboxes = doc.infoboxes();
+						if (infoboxes && infoboxes.length > 0) {
+							resolve({data:infoboxes[0]});
+						} else {
+							resolve({data:{}})
+						}
+					} 
+					resolve({data:{}})
 				})
 				//wiki({
 					//apiUrl: 'https://en.wikipedia.org/w/api.php',

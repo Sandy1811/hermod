@@ -63,7 +63,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 					});
 					let action =  scores[0].action;
 					let confidence = scores[0].action.score;
-				  // console.log(['FROM SCORES PREDICT FOUND',action,confidence])
+				   console.log(['FROM SCORES PREDICT FOUND',action,confidence])
 					//that.sendMqtt('hermod/'+siteId+'/core/predicted',{id:payload.id,action:action});
 			  
 					// execute action via rasa	
@@ -71,7 +71,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 					.then(executeResponse => {
 							//that.sendMqtt('hermod/'+siteId+'/core/exec',{id:payload.id,action:action,messages:executeResponse.data.messages});
 							that.sendMqtt('hermod/'+siteId+'/core/tracker',{id:payload.id,tracker:executeResponse.data.tracker});
-							//console.log(['EXECed '+action,executeResponse.data.messages])
+							console.log(['EXECed '+action,executeResponse.data.messages])
 							// speak array of messages sequentially
 							if (executeResponse && executeResponse.data && executeResponse.data.messages && executeResponse.data.messages.length > 0) {
 								
@@ -137,8 +137,8 @@ class HermodRasaCoreRouterService extends HermodService  {
 												//console.log('POSTING MESSAGE')
 												//console.log(response)
 												that.sendMqtt('hermod/'+siteId+'/tts/say',{id:payload.id,text:messages[0].text})
-												console.log('DISPLAY MESSAGES')
-												console.log(messages[0])
+												//console.log('DISPLAY MESSAGES')
+												//console.log(messages[0])
 												if (messages[0].image) that.manager.sendMqtt("hermod/"+siteId+"/display/image",{id:payload.id,image:messages[0].image});
 									
 												if (messages[0].buttons) that.manager.sendMqtt("hermod/"+siteId+"/display/buttons",{id:payload.id,image:messages[0].buttons});
@@ -150,7 +150,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 											//})
 										}
 									}
-								}
+								} 
 								// add initial callback
 								callbacks['hermod/'+siteId+'/speaker/finished'] = getCallbackFunction(messages.slice(1))
 								
@@ -164,8 +164,8 @@ class HermodRasaCoreRouterService extends HermodService  {
 									//console.log('POSTING INIT MESSAGE')
 									//console.log(response)
 									that.manager.sendMqtt("hermod/"+siteId+"/tts/say",{id:payload.id,text:messages[0].text});
-									console.log('DISPLAY MESSAGES')
-									console.log(messages[0])
+									//console.log('DISPLAY MESSAGES')
+									//console.log(messages[0])
 									if (messages[0].image) that.manager.sendMqtt("hermod/"+siteId+"/display/image",{id:payload.id,image:messages[0].image});
 									
 									if (messages[0].buttons) that.manager.sendMqtt("hermod/"+siteId+"/display/image",{id:payload.id,image:messages[0].buttons});
@@ -176,6 +176,9 @@ class HermodRasaCoreRouterService extends HermodService  {
 									
 									//console.log(e);
 								//})
+							} else {
+								console.log('no rasa action response')
+								resolve("action_stop_listening");
 							}
 							
 							
@@ -190,6 +193,8 @@ class HermodRasaCoreRouterService extends HermodService  {
 							
 					
 				}	else {
+					console.log('no rasa predict response')
+								
 					resolve('action_stop_listening')
 				}	
 			}).catch(error => {
@@ -214,6 +219,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 			  //that.sendMqtt('hermod/'+siteId+'/core/messages',{id:payload.id,message:payload.text,nlu:payload});
 			  that.predictAndRun(siteId,payload).then(function(action) {
 				if (action === 'action_stop_listening') {
+					console.log(['CORE END'])
 					that.sendMqtt('hermod/'+siteId+'/dialog/end',{id:payload.id});
 				//} else if (action.indexOf('utter_')>=0) {
 					//if (this.domain && this.domain.templates && this.domain.templates.hasOwnProperty(action)) {
@@ -241,6 +247,7 @@ class HermodRasaCoreRouterService extends HermodService  {
 					//} 
 				} else {
 					axios.post(that.props.coreServer+"/conversations/"+siteId+"/tracker/events",{"event": "action", "name":'action_listen'}).then(function(response) {
+						console.log(['CORE continue'])
 						that.sendMqtt('hermod/'+siteId+'/dialog/continue',{id:payload.id});	
 					})
 				}

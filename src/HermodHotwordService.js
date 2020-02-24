@@ -77,6 +77,7 @@ class HermodHotwordService extends HermodService  {
 		});
 
 		detector.on('hotword', function (index, hotword, buffer) {
+			that.sendMqtt('hermod/'+siteId+'/speaker/stop',{});
 			that.sendMqtt('hermod/'+siteId+'/hotword/detected',{hotword:hotword});
 		});
 		this.mqttStreams[siteId] = new Wav.Writer();		 

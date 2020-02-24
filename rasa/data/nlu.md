@@ -34,7 +34,8 @@
 - why use [Antibiotics](topic)
 - tell me about [Sunspots](topic)
 - tell me about [astronomy](topic)
-
+- where is [South Sudan](topic)
+- when was [world war 1](topic)
 
 ## intent:tell_me_more
 - tell me more

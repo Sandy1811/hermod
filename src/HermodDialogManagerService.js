@@ -3,7 +3,8 @@ var HermodService = require('./HermodService')
 //const record = require('node-record-lpcm16');
 //const Detector = require('snowboy').Detector;
 //const Models = require('snowboy').Models;
-
+const config = require('./config');
+var fs = require('fs') 
 var stream = require('stream') 
 var Readable = stream.Readable;
 var WaveFile = require('wavefile')
@@ -20,11 +21,25 @@ class HermodDialogManagerService extends HermodService  {
 		function startDialog(siteId,payload) {
 				//Start a dialog 
 				var dialogId = String(parseInt(Math.random()*100000000,10))
-				that.dialogs[dialogId] = {asrModels:payload.asrModels ? payload.asrModels : 'default', nluModels:payload.nluModels ? payload.nluModels : 'default'};
-				that.sendMqtt('hermod/'+siteId+'/hotword/stop')
+				that.dialogs[dialogId] = {};
+				if (config.enableBargeIn) {
+					that.sendMqtt('hermod/'+siteId+'/hotword/start')
+				} else {
+					that.sendMqtt('hermod/'+siteId+'/hotword/stop')
+				}
 				that.sendMqtt('hermod/'+siteId+'/dialog/started',{id:dialogId})
 				//that.sendMqtt('hermod/'+siteId+'/hotword/stop',{})
-				if (that.props.welcomeMessage) {
+				if (that.props.welcomeSound && fs.existsSync(that.props.welcomeSound)) {
+					let sound = fs.readFileSync(that.props.welcomeSound) 
+					let callbacks = {}
+					callbacks['hermod/'+siteId+'/speaker/finished'] = function() {
+						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
+						that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId})
+					}
+					// automatic cleanup after single message with true parameter
+					that.callbackIds[siteId] = that.manager.addCallbacks('DM CLEANUP',callbacks,true)		
+					that.manager.sendAudioMqtt('hermod/'+siteId+'/speaker/play',sound)
+				} else if (that.props.welcomeMessage) {
 					let callbacks = {}
 					callbacks['hermod/'+siteId+'/tts/finished'] = function() {
 						that.sendMqtt('hermod/'+siteId+'/microphone/start',{})
@@ -38,6 +53,7 @@ class HermodDialogManagerService extends HermodService  {
 					that.sendMqtt('hermod/'+siteId+'/asr/start',{id:dialogId})
 				}
 		}
+		
 		function startNlu(siteId,payload) {
 				//Start a dialog 
 				var dialogId = String(parseInt(Math.random()*100000000,10))
@@ -52,6 +68,7 @@ class HermodDialogManagerService extends HermodService  {
         let eventFunctions = {
         // SESSION
             'hermod/+/hotword/detected' : function(topic,siteId,payload) {
+				that.sendMqtt('hermod/'+siteId+'/speaker/stop',{id:payload.id})
 				that.sendMqtt('hermod/'+siteId+'/dialog/end',{id:payload.id})
 				let callbacks={};
 				callbacks['hermod/'+siteId+'/dialog/ended'] = function() {
@@ -62,7 +79,7 @@ class HermodDialogManagerService extends HermodService  {
 			}
 		    ,
 		    'hermod/+/dialog/start' : function(topic,siteId,payload) {
-				console.log('DSTART')
+				//console.log('DSTART')
 				// if text is sent with start message, jump straight to nlu
 				if (payload.text && payload.text.length > 0) {
 					startNlu(siteId,payload)
@@ -105,17 +122,22 @@ class HermodDialogManagerService extends HermodService  {
 		    ,
 		    'hermod/+/asr/text' : function(topic,siteId,payload) {
 				//Sent by asr service
-			//	if (that.dialogs.hasOwnProperty(payload.id)) {
+				// don't accept text if dialog already ended
+				if (that.dialogs.hasOwnProperty(payload.id)) {
 					//if (payload.text && payload.text.length > 0) {
 						//that.dialogs[payload.id].text = payload.text
-						that.sendMqtt('hermod/'+siteId+'/hotword/stop')
 						that.sendMqtt('hermod/'+siteId+'/asr/stop')
-						that.sendMqtt('hermod/'+siteId+'/microphone/stop')
+						if (!config.enableBargeIn) {
+							that.sendMqtt('hermod/'+siteId+'/hotword/stop')
+						}
+						if (!config.enableServerHotword) {
+							that.sendMqtt('hermod/'+siteId+'/microphone/stop')
+						}
 						that.sendMqtt('hermod/'+siteId+'/nlu/parse',{id:payload.id,text:payload.text,confidence:payload.confidence})
 					//} else {
 						//console.error('empty asr text')
 					//}
-				//} else {
+				} //else {
 					//console.error('missing id in asr text')
 				//}
 		    }
@@ -170,6 +192,7 @@ class HermodDialogManagerService extends HermodService  {
 				//The application that is listening for the intent, should sent => hermod/<siteId>/dialog/end when it's action is complete so the dialog manager can
 				// Garbage collect dialog resources.
 				// Respond with /dialog/ended and optionally restart server hotword streaming
+				that.sendMqtt('hermod/'+siteId+'/speaker/stop',{})
 				if (that.dialogs.hasOwnProperty(payload.id)) {
 					delete that.dialogs[payload.id]
 				}

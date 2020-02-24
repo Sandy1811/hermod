@@ -25,7 +25,7 @@ class HermodSpeakerService extends HermodService {
 		this.setVolume(props.volume ? props.volume : 1)	
         let eventFunctions = {
             'hermod/+/speaker/play' : function(destination,siteId,audio) {
-			         that.sendMqtt("hermod/"+siteId+"/speaker/started",{});
+			        that.sendMqtt("hermod/"+siteId+"/speaker/started",{});
                     that.playSound(audio).then(function() {
                     		  that.sendMqtt("hermod/"+siteId+"/speaker/finished",{}); 
 					}); 
@@ -53,6 +53,8 @@ class HermodSpeakerService extends HermodService {
 			if (that.reader) {
 				try {
 					that.reader.pause();
+					// ?? that.reader.destroy();
+					// or chunk reader into stream to allow stopping stream ?
 					that.reader = null;
 				} catch(e) {
 					console.log(e)

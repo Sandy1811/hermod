@@ -3,15 +3,15 @@ const utils=require('../utils')
 
 module.exports = function(param,mqttSubscriptionManager,siteId,tracker) {return new Promise(function(resolve,reject) {
 	// keep this up to date with nlu.md
-	const patterns = ["define [. .?]",
-				"what is the definition of [*]",
-				"what does [*] mean",
-				"what is the meaning of [*]",
-				"dictionary lookup [*]",
-				"look in the dictionary for the word [*]",
-				"find [*] in the dictionary"]
+	//const patterns = ["define [. .?]",
+				//"what is the definition of [*]",
+				//"what does [*] mean",
+				//"what is the meaning of [*]",
+				//"dictionary lookup [*]",
+				//"look in the dictionary for the word [*]",
+				//"find [*] in the dictionary"]
 				
-	let searchFor = param && param.word && param.word.length > 0 ? param.word : utils.from_text_nlp_patterns(tracker,patterns)
+	let searchFor = param && param.word && param.word.length > 0 ? param.word : ''; //utils.from_text_nlp_patterns(tracker,patterns)
 	console.log(['define',searchFor])
 	if (searchFor && searchFor.length > 0)  {
 		wikitools.wiktionaryLookupNoun(searchFor).then(function(response) {

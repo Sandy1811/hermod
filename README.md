@@ -1,10 +1,65 @@
 # Hermod Voice Protocol
 
+The Hermod Voice Protocol describes a data format for sending messages between microservices on an MQTT bus to support voice based dialog.
+The protocol describes a dialog flow starting with hotword detection or button press, through ASR, NLU and RASA core routing to support context based dialog.
+
+The included library provides an implementation of the Hermod protocol that can be used to build your own Alexa like device.
+
+The included React library provides implementation of some components of the protocol in a web browser (Speaker,Microphone, TTS, ..) to support building websites that you can talk to.
+
+## Quickstart
+
+Clone this repository and `docker-compose up`
+
+The included RASA model and action server supports querying wikipedia. For example. Tell me about China. [bot reply first sentence wiki] ... What is the capital city [bot response from parsing infobox for attributes - Beijing]
+
+By default, Deepspeech is used for speech recognition. Edit the docker-compose file to include credentials for Google STT or IBM Watson STT. Google is the most accurate and response 
+
+## Why use a message bus in Hermod ? 
+
+In comparison, the RASA team provide an [example voice chat using Deepspeech](https://github.com/RasaHQ/rasa-voice-interface) where the browser communicates directly with Deepspeech and RASA servers.
+
+The protocol is derived from Snips Hermes which is intended for building offline solutions where minimising network traffic and performance load are less important and distribution is more important to support a network of smaller (Raspberry Pi) devices providing a multi room dialog solution.
+
+
+CONS
+- extra infrastructure (mqtt server, nodejs)
+- protocol introduces complexity and processing overhead
+- current implementation of ASR/NLU/CORE are server based so all communication with those services is doubled by bridging MQTT to HTTP.
+- serverless deployment costs are unnecessarily inflated because each interaction requires multiple calls as a message proceeds through the dialog flow.
+
+
+PROS
+- useful for home automation setup as well as distributed web apps.
+- elements of the protocol can be distributed
+- protocol provides clarity because most microservices have a simple contract. A variety of implementations of ASR (Deepspeech, Google, BrowserDirectGoogle, .....) can all satisfy a simple contract of asr/start, asr/stop, microphone/audio then send messages asr/text or asr/fail.
+- dialog manager as message broker provides opportunity to control flow of dialog (bailout, barge in, to person)
+- protocol can be extended to support - display devices, asynchronous user identification, deduplication of requests when a spoken command is heard by multiple devices, .... 
+- RASA can be behind a firewall that only exposes MQTT and HTTP. 
+- messaging protocol provides for easy logging of dialog flow internals.
+- secure realtime messaging built into application framework.
+- distributed audio framework built in
+- protocol can be used to build standalone audio endpoints eg Raspberry Pi 0 running Speaker, Microphone and Hotword services supported by "home hub" Pi4 that runs machine learning services Deepspeech and RASA. Mqtt libraries exist for Arduino so potential to build very low power devices.
+- interface to alexa and google assistant through JOVO http endpoint triggering a dialog init and intent directly then collating tts/say 
+until dialog/end or dialog/continue when the http endpoint returns ask or say to JOVO as appropriate.
+
+
+
+MITIGATION
+- Allow a browser or server to work without a central MQTT server by implementing an internal messaging proxy. 
+Subscription manager can be modified to support messaging between components directly whilst optionally allowing some messages to be released to the bus.
+
+- browser based components for ASR, NLU, CORE that speak Websockets directly to the back end services rather than via mqtt and node.
+
+
+
+==================================
+
+
 This project has been restructured and updated (11/09/2019) in the following ways
 - For the best experience, google ASR and TTS are enabled by default. Credentials are now required to run the example. Deepspeech can be enabled by uncommenting lines in the Dockerfile and the config file. 
 - RASA is now integrated as an official docker hub image rather than custom compilations.
 - to simplify development, the hermod-react-satellite npm module has been removed in favor of placing all the React Component files into the webexample source directory.
-
 
 - CoreRouting and Action service integration with RASA has been finished/fixed. Messages from the action server via the execute endpoint are sent as a sequence of TTS messages. action_stop_listening turns off the microphone otherwise the predict run loop continues until action_listen. 
 - ActionService as part of the MQTT hermod protocol has been removed in favor of an action API server that is triggered by RASA core.
@@ -13,6 +68,56 @@ This project has been restructured and updated (11/09/2019) in the following way
 - support serverHotwordEnabled mode so Microphone audio streaming continues even when paused. Silence detection is enabled however it's really only intended to be used on local networks.
 - rough implementation of UI cards. Where RASA messages include images, buttons, links.
 
+
+DONE
+- barge in. local and remote hotword always listening trigger stop/start dialog
+
+
+TODO
+- no click microphone during STT 
+- minimise speaker volume during STT
+- tts bailout (on STT)
+- click mic -> end, start dialog
+
+
+- minimise messages (lambda cost)
+- hotword detected -> volume DOWN
+- forms - js implementation
+	- python version includes functions name, required slots, submit, validate, slot_mappings (text/intent/entity/custom)
+- alt dialog strategies
+	- list - select item
+	- quiz
+	- playlist
+	- ordinal mentions (and other contextful mentions)
+	- synonyms
+- deepspeech - latency is too much. reunify service and listener (split because deepspeech exceptions crash node) to minimise latency by keeping model loaded.
+
+- rasa mqtt input channel (see Juste's work with web interface)
+- ? input channels, reply to same channel. hermod/alexa/google ?
+- login init mqttt endpoint/secure MQTT (mosca easy and means hermod can be one service with npm install)
+- wiki dialog example
+- alternative approaches to free text capture
+	- current implemention relies on examples as per NLU training data
+	- alternatives could seek eg #Noun using compromise or use other pattern matching approaches?
+	
+- conversation logging - mqtt message and audio capture. export stories and NLU.
+- knowledge graph fallback
+- fallback actions
+- welcome action 
+- retrieval actions
+- action listen then pre predict next possible actions after action_listen and apply as filters to NLU intent query ?
+
+wikipedia
+- show me pictures
+- list attributes
+- topic and categories ?
+- related topics
+
+- nomenclature
+	- subject
+	- topic
+	- question
+	- quiz question
 
 
 ## Overview

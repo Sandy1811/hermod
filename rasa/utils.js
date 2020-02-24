@@ -84,5 +84,18 @@ const utils = {
 	textResponse: function(text,events) {
 		return {responses:[{text:text}],events:events ? events : []}
 	} 
+	
+	//fillNLPData(text) {
+		//// boost entity recognition
+		//// RASA nlu will only fill slots if the value has been provided to training data
+		//// using compromise and pattern matching techniques, additional meta data is provided with the intent
+		//// people, places, organisations, dates, nouns, verbs, adjectives
+		//// question pattern match to extract free text search
+		///
+		//return {}
+	//}
+	
+	
+   
 }
 module.exports = utils

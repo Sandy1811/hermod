@@ -90,9 +90,9 @@ class HermodGoogleAsrService extends HermodService  {
     }
     
     startAsr(siteId) {
-				console.log('start asr ')
-
+		console.log('start asr ')
 		let that = this;
+		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId]);
 		var eventFunctions={}
 		that.failCounts[siteId] = 0;
 		eventFunctions['hermod/+/microphone/audio'] = that.onAudioMessage.bind(that)
@@ -100,14 +100,13 @@ class HermodGoogleAsrService extends HermodService  {
 		that.startMqttListener(siteId);
 	}
 
-  
- 
 	stopAsr(siteId) {
 		let that = this;
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId]);
 		try {
 			that.stopMqttListener(siteId);
-			that.mqttStreams[siteId].push(null)
+			if (that.mqttStreams[siteId]) that.mqttStreams[siteId].push(null)
+			delete that.mqttStreams[siteId]
 		} catch (e) {
 			console.log(['FINISH STREAM ERROR',e])
 		}
@@ -149,10 +148,10 @@ class HermodGoogleAsrService extends HermodService  {
 					case VAD.Event.ERROR:
 						break;
 					case VAD.Event.SILENCE:
-						pushBuffers(siteId,buffer)
+						if (that.isStarted) pushBuffers(siteId,buffer)
 						break;
 					case VAD.Event.NOISE:
-						pushBuffers(siteId,buffer)
+						if (that.isStarted) pushBuffers(siteId,buffer)
 						break;
 					case VAD.Event.VOICE:
 						that.isStarted = true;     
@@ -184,7 +183,7 @@ class HermodGoogleAsrService extends HermodService  {
 				that.stopAsr(siteId)
 				that.sendMqtt('hermod/'+siteId+'/asr/fail',{id:that.dialogIds[siteId]});
 			//}
-		},config.services.HermodGoogleAsrService.timeout);
+		},that.props.timeout);
 	}
 	
 	
@@ -199,9 +198,14 @@ class HermodGoogleAsrService extends HermodService  {
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 							
 		if (data.results[0] && data.results[0].alternatives[0] && data.results[0].alternatives[0].transcript.length > 0)  {
-			that.sendMqtt('hermod/'+siteId+'/asr/text',{id:that.dialogIds[siteId],text:data.results[0].alternatives[0].transcript});
+			// don't forward text if already stopped
+			if (that.mqttStreams[siteId]) {
+				that.sendMqtt('hermod/'+siteId+'/asr/text',{id:that.dialogIds[siteId],text:data.results[0].alternatives[0].transcript});
+			}
 			that.stopMqttListener(siteId)
+			
 		} else {
+			// TODO RESTORE/FIX SEND FAILED ASR AND NLU AND CORE TO ACTION_FAIL_xxxx
 			//that.sendMqtt('hermod/'+siteId+'/asr/notext',{id:that.dialogIds[siteId]});
 			
 			//if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;

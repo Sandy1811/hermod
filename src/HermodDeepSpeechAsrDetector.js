@@ -50,7 +50,7 @@ class HermodDeepSpeechAsrDetector extends HermodService  {
 		
         }
         
-		console.log('HermodDeepSpeechAsrDetector',props.siteId);
+		//console.log('HermodDeepSpeechAsrDetector',props.siteId);
 			
         this.manager = new HermodSubscriptionManager({siteId:props.siteId,username:config.username,password:config.password,allowedSites:config.allowedSites});
 		

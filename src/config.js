@@ -7,7 +7,8 @@ var config={
 	
 	// siteId for local Speaker and Microphone services
 	siteId:'default',
-	
+	enableBargeIn: true,
+	enableServerHotword: false,
 	// only respond to message from these sites
 	allowedSites:process.env.ALLOWED_SITES ? process.env.ALLOWED_SITES :'default',
 	actions: actions,
@@ -23,20 +24,22 @@ var config={
         //,
         
         
-		HermodRasaNluService: {
-			rasaServer: process.env.RASA_SERVER ? process.env.RASA_SERVER : 'http://rasa:5005',
-			minConfidence: 0.3
-		}
-		,
-		HermodRasaCoreRouterService: {
-			coreServer:process.env.RASA_SERVER ? process.env.RASA_SERVER :'http://rasa:5005',
-			domainFile:'../rasa/domain.yml',
-		}
-		,
+		//HermodRasaNluService: {
+			//rasaServer: process.env.RASA_SERVER ? process.env.RASA_SERVER : 'http://rasa:5005',
+			//minConfidence: 0.1,
+			//slotMappingFile: '../rasa/slotMappings.yml'
+		//}
+		//,
+		//HermodRasaCoreRouterService: {
+			//coreServer:process.env.RASA_SERVER ? process.env.RASA_SERVER :'http://rasa:5005',
+			//domainFile:'../rasa/domain.yml',
+		//}
+		//,
 		HermodDialogManagerService: {
 			// start audio streaming on load and restart to support server hotword
 			enableHotword: false,
 			welcomeMessage: 'Hi',
+			welcomeSound: '../rasa/gday.wav',
 			maxAsrFails:5,
 			maxNluFails: 2,
 			asrFailMessage:"Sorry, I couldn't hear that. Could you say it again.",
@@ -86,6 +89,7 @@ var config={
 	}
 }
 
+console.log(['ENVIRONMENT',process.env])
 const localASRandTTS = {
 		// local service using pico2wav
         HermodTtsService: {
@@ -93,27 +97,43 @@ const localASRandTTS = {
 			ttsOutputDirectory: '/tmp'
         }
         ,
-        // Alternative to Google ASR service
-		HermodDeepSpeechAsrService: {
+        // ASR service
+		HermodIbmWatsonAsrService: {
                  model: "default",
-                 timeout: 5000,
-                 //These constants control the beam search decoder
-                 //These constants are tied to the shape of the graph used (changing them changes
-                 //the geometry of the first layer), so make sure you use the same constants that
-                 //were used during training
-                BEAM_WIDTH : 1024, //500, // Beam width used in the CTC decoder when building candidate transcriptions
-                LM_ALPHA : 0.75, // The alpha hyperparameter of the CTC decoder. Language Model weight
-                LM_BETA : 1.85, // The beta hyperparameter of the CTC decoder. Word insertion bonus.
-                N_FEATURES : 26, // Number of MFCC features to use
-                N_CONTEXT : 9, // Size of the context window used for producing timesteps in the input vector
-                files: {
-                        model :"../deepspeech-model/models/output_graph.pbmm",
-                        alphabet: "../deepspeech-model/models/alphabet.txt",
-                        lm: "../deepspeech-model/models/lm.binary",
-                        trie: "../deepspeech-model/models/trie"
-                },
-                maxProcesses: 2
-       }
+                 timeout: 2000,
+                 iam_apikey: process.env.SPEECH_TO_TEXT_IAM_APIKEY,
+                 url: process.env.SPEECH_TO_TEXT_URL
+        },
+        //HermodDeepSpeechAsrService: {
+			//model: "default",
+			//timeout: 2000,
+			 ////These constants control the beam search decoder
+			 ////These constants are tied to the shape of the graph used (changing them changes
+			 ////the geometry of the first layer), so make sure you use the same constants that
+			 ////were used during training
+			//BEAM_WIDTH : 1024, //500, // Beam width used in the CTC decoder when building candidate transcriptions
+			//LM_ALPHA : 0.75, // The alpha hyperparameter of the CTC decoder. Language Model weight
+			//LM_BETA : 1.85, // The beta hyperparameter of the CTC decoder. Word insertion bonus.
+			//N_FEATURES : 26, // Number of MFCC features to use
+			//N_CONTEXT : 9, // Size of the context window used for producing timesteps in the input vector
+			//files: {
+					//model :"../deepspeech-model/models/output_graph.pbmm",
+					//alphabet: "../deepspeech-model/models/alphabet.txt",
+					//lm: "../deepspeech-model/models/lm.binary",
+					//trie: "../deepspeech-model/models/trie"
+			//},
+			//maxProcesses: 2
+       //}
+       
+       // NOT WORKING
+       //,
+       //HermodAWSTranscribeAsrService: {
+			//accessKey: 'AKIAWXQHXP7SRPQYMF4E',
+			//secret: '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',
+			//languageCode: 'en-US', 
+			//region: 'us-west-2',
+			//timeout: 1000
+	   //}
 }
 
 
@@ -124,7 +144,7 @@ const googleASRandTTS = {
         //// ensure export environment variable GOOGLE_APPLICATION_CREDENTIALS is path to downloaded credentials
         //// export GOOGLE_APPLICATION_CREDENTIALS=/home/stever/Downloads/hermod-d96c7d7c36f3.json
 		HermodGoogleAsrService: {
-			timeout: 2000,
+			timeout: 1000,
 			maxFails: 2
 		}
 		,
@@ -132,8 +152,9 @@ const googleASRandTTS = {
 			voice: {languageCode: 'en-AU', ssmlGender: 'MALE'},
 			audioConfig: {audioEncoding: 'MP3'}
 		}
-		
+
 }
+
 // if google credentials exist, use google ASR and TTS
 const fs = require('fs')
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {

@@ -11,7 +11,7 @@ services:
       - ./:/usr/src/app
       #  mount source for development
       #GOOGLE_APPLICATION_CREDENTIALS=/home/stever/hermod-1548488627033-bdeb0a01d824.json
-      - /home/stever/hermod-1548488627033-bdeb0a01d824.json:/credentials.json
+     # - /home/stever/hermod-1548488627033-bdeb0a01d824.json:/credentials.json
       # direct sound card access        
       #- /dev/snd:/dev/snd
       # Deepspeech Models
@@ -24,7 +24,8 @@ services:
     #ports:
         # expose action server for development
         # - 5055:5055  
-        
+    env_file:
+      - ../credentials/ibm-credentials.env    
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/credentials.json
       - MONGODB=mongodb://hermod2:hermod@mongo/hermod
@@ -115,11 +116,6 @@ services:
   #duckling:
     #image: rasa/duckling
     #restart: always
- 
- 
- 
- 
- 
      # RASA SETUP
      # docker run -v $(pwd)/rasa:/app rasa/rasa init --no-prompt
      # TEST

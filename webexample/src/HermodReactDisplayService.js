@@ -69,6 +69,7 @@ export default class HermodReactDisplayService extends HermodReactComponent  {
 
 
     render() {
+        return null;
         return <div id="HermodreactDisplayService"  >
         {this.state.iframe && <iframe src={this.state.iframe+'?printable=yes'} style={{height: '1000px', width:'400px'}} />}
         

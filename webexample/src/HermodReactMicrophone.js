@@ -9,7 +9,7 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
     constructor(props) {
         super(props);
         let that = this;
-        this.state={}
+        this.state={ttsSpeaking: false}
         if (!props.siteId || props.siteId.length === 0) {
             throw "Hermod Microphone must be configured with a siteId property";
         }
@@ -28,6 +28,7 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
         
         this.startRecording = this.startRecording.bind(this);
         this.stopRecording = this.stopRecording.bind(this);
+        this.stopSpeaking = this.stopSpeaking.bind(this);
         //this.startRecorder = this.startRecorder.bind(this);
         this.flashState = this.flashState.bind(this);
         this.activate = this.activate.bind(this);
@@ -51,6 +52,18 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
             'hermod/+/tts/say' : function(topic,siteId,payload) {
                 if (siteId && siteId.length > 0  && payload.text && payload.text.length > 0 ) {
                     that.flashState('lastTts',payload.text);
+                }
+            }
+            ,
+            'hermod/+/tts/started' : function(topic,siteId,payload) {
+                if (siteId && siteId.length > 0 ) {
+                    that.setState({ttsSpeaking:true});
+                }
+            }
+            ,
+            'hermod/+/tts/finished' : function(topic,siteId,payload) {
+                if (siteId && siteId.length > 0 ) {
+                    that.setState({ttsSpeaking:false});
                 }
             }
             ,
@@ -101,6 +114,13 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
 		},1000)
         
     }
+
+
+	stopSpeaking() {
+		this.sendMqtt('hermod/'+this.props.siteId+'/speaker/stop',{})
+		this.stopRecording()
+		this.setState({ttsSpeaking:false});
+	}
 
     /** 
      * Functions to enable and disable configuration screen 
@@ -177,6 +197,7 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
          }   catch (e) {
              console.log(e);
          }
+        
         function success(e) {
 			  let audioContext = window.AudioContext || window.webkitAudioContext;
               let context = new audioContext();
@@ -222,7 +243,8 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
               recorder.onaudioprocess = function(e){
                   if (that.state.activated  && that.state.sending ) {
 		    		  resample(e.inputBuffer,16000,function(res) {
-						that.logger.sendAudioMqtt('hermod/'+that.props.siteId+'/microphone/audio',Buffer.from(convertFloat32ToInt16(res)))
+						  console.log('audio out')
+						  that.logger.sendAudioMqtt('hermod/'+that.props.siteId+'/microphone/audio',Buffer.from(convertFloat32ToInt16(res)))
             		  });
             	  }
 	    	  }
@@ -254,9 +276,9 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
    
   
     
-    ///**
-     //* Bind silence recognition events to set speaking state
-     //*/ 
+    /**
+     * Bind silence recognition events to set speaking state
+     */ 
     bindSpeakingEvents(audioContext,e) {
         let that = this;
         var options = {audioContext:audioContext};
@@ -352,7 +374,10 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
     //if (this.state.sending) status = 3;
     let borderColor='black'
     let borderWidth = 2;
-    if (status==3) {
+    if (this.state.ttsSpeaking) {
+		borderColor = (this.state.speaking) ? 'darkblue' : (this.props.borderColor ? this.props.borderColor : 'blue');
+        buttonStyle.backgroundColor = 'lightblue';
+	} else if (status==3) {
         borderColor = (this.state.speaking) ? 'darkgreen' : (this.props.borderColor ? this.props.borderColor : 'green');
         buttonStyle.backgroundColor = 'lightgreen';
         if (this.state.speaking) borderWidth = 3;
@@ -388,11 +413,14 @@ export default class HermodReactMicrophone extends HermodReactComponent  {
     let inputStyle={marginBottom:'0.5em',fontSize:'0.9em'};
     let config = this.props.config;
     return <div id="hermodreactmicrophone"   style={{zIndex:'9999'}}>
-        {(!this.state.activated) && <span  onClick={this.activate}>{micOnIcon}</span>} 
         
-        {(this.state.activated && this.state.sending) && <span onTouchStart={this.showConfig}  onTouchEnd={this.clearConfigTimer}   onMouseDown={this.showConfig} onMouseUp={this.clearConfigTimer} onContextMenu={this.showConfigNow} onClick={this.stopRecording}>{micOffIcon}</span>} 
+        {(this.state.ttsSpeaking ) && <span onClick={this.stopSpeaking}>{micOffIcon}</span>} 
         
-        {(this.state.activated  && !this.state.sending) && <span onTouchStart={this.showConfig}  onTouchEnd={this.clearConfigTimer}   onMouseDown={this.showConfig} onMouseUp={this.clearConfigTimer} onContextMenu={this.showConfigNow} onClick={this.activate}>{micOnIcon}</span>} 
+        {(!this.state.ttsSpeaking &&  !this.state.activated) && <span  onClick={this.activate}>{micOnIcon}</span>} 
+        
+        {(!this.state.ttsSpeaking && this.state.activated && this.state.sending) && <span onTouchStart={this.showConfig}  onTouchEnd={this.clearConfigTimer}   onMouseDown={this.showConfig} onMouseUp={this.clearConfigTimer} onContextMenu={this.showConfigNow} onClick={this.stopRecording}>{micOffIcon}</span>} 
+        
+        {(!this.state.ttsSpeaking && this.state.activated  && !this.state.sending) && <span onTouchStart={this.showConfig}  onTouchEnd={this.clearConfigTimer}   onMouseDown={this.showConfig} onMouseUp={this.clearConfigTimer} onContextMenu={this.showConfigNow} onClick={this.activate}>{micOnIcon}</span>} 
         
         {(this.state.showMessage ) && <div style={{position:'fixed', padding:'1em', borderRadius:'20px',backgroundColor:'skyblue',margin:'5%',width:'90%',top:'1.7em',color:'black',border:'2px solid blue',zIndex:'9999'}} >
                 {this.state.lastTranscript && <div style={{fontStyle:'italic'}}>{this.state.lastTranscript}</div>}

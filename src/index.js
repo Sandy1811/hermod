@@ -34,24 +34,33 @@ const bodyParser= require('body-parser')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+//app.use('/watson',require('./IbmWatsonSTT/app.js'));
+// WATSON AUTH ENDPOINT
+// TO RESTRICT ACCESS INTEGRATE WITH PARENT APPLICATION AS SECURE ENDPOINT
+const watson = require('./ibm-watson-stt');
+let portw = 5054
+watson.listen(portw);
+console.log('watson listening at:', portw);
+
 const actions = config.actions
 
 const port = 5055
 app.get('/', (req, res) => {
   res.send('Hi from the action server')
 })
+
 app.post('*', (req, res) => {
 	//console.log('ACTION HIT') 
 	//console.log(req.body);
 	if (req.body && req.body.next_action) {
 		if (actions.hasOwnProperty(req.body.next_action)) {
 			// call action with tracker slots as parameters
-			console.log(['run action '+req.body.next_action,req.body.tracker.slots])
+			//console.log(['run action '+req.body.next_action,req.body.tracker.slots])
 			//if (actions[req.body.next_action].then) {
 				console.log(['promise action '+req.body.next_action,JSON.stringify(req.body.tracker)])
 				// action parameters - tracker slots, mqttManager, siteId, complete tracker
 				actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {}),manager,config.siteId,req.body.tracker).then(	function(message) {
-					console.log('promise action complete '+req.body.next_action)
+					//console.log('promise action complete '+req.body.next_action)
 					res.send(message)
 				}) 	   
 			//} else {  
@@ -60,11 +69,11 @@ app.post('*', (req, res) => {
 				//res.send(actions[req.body.next_action]((req.body && req.body.tracker && req.body.tracker.slots ? req.body.tracker.slots : {})))
 			//}  
 		} else {
-			console.log('no such action '+req.body.next_action)
+			//console.log('no such action '+req.body.next_action)
 			res.send({error:'no such action - '+req.body.next_action})
 		}
 	} else {   
-		console.log('no next action ')
+		//console.log('no next action ')
 		res.send({error:'no such action - '+req.body.next_action})
 	}
 

@@ -1,13 +1,32 @@
 var HermodService = require('./HermodService')
 var HermodSubscriptionManager = require('./HermodSubscriptionManager')
+var SpeechToTextV1 = require('ibm-watson/speech-to-text/v1');
+//var fs = require('fs');
+
 var stream = require('stream') 
-var VAD= require('node-vad')
-var Wav = require('wav')
-const Ds = require('deepspeech');
 var Readable = stream.Readable;
 var Writable = stream.Writable;
+//var PassThrough = stream.PassThrough;
+//var WaveFile = require('wavefile')
+var VAD= require('node-vad')
 
-class HermodDeepSpeechAsrService extends HermodService  {
+//const argparse = require('argparse');
+const config = require('./config');
+//const MemoryStream = require('memory-stream');
+//const Duplex = require('stream').Duplex;
+const util = require('util');
+var Wav = require('wav')
+
+
+//let mqttStreams = {};
+//let audioDump = {};
+        				
+//var speaker = require('speaker')
+//var WaveFile = require('wavefile')
+
+
+
+class HermodIbmWatsonAsrService extends HermodService  {
     constructor(props) {
         super(props);
         let that = this;
@@ -46,8 +65,8 @@ class HermodDeepSpeechAsrService extends HermodService  {
 		this.speechCallback = this.speechCallback.bind(this)
 		this.setupTimeout = this.setupTimeout.bind(this)
 		this.VAD = new VAD(VAD.Mode.NORMAL);
-				
-		this.asrModel = null;
+		this.onAudioMessage = this.onAudioMessage.bind(this)		
+		
 		
         let eventFunctions = {
         // SESSION
@@ -74,7 +93,11 @@ class HermodDeepSpeechAsrService extends HermodService  {
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId]);
 		var eventFunctions={}
 		that.failCounts[siteId] = 0;
-		eventFunctions['hermod/+/microphone/audio'] = that.onAudioMessage.bind(that)
+		eventFunctions['hermod/+/microphone/audio'] = function(topic,siteId,payload) { 
+			//console.log('AUDIO')
+			//console.log(payload)
+			that.onAudioMessage(topic,siteId,payload)
+		}
 		this.callbackIds[siteId] = that.manager.addCallbacks('ASR',eventFunctions,false,false,siteId)
 		that.startMqttListener(siteId);
 	}
@@ -119,7 +142,8 @@ class HermodDeepSpeechAsrService extends HermodService  {
 		if (this.mqttStreams.hasOwnProperty(siteId)) {
 			// push into stream buffers for the first time (and start timeout)
 			function pushBuffers(siteId,buffer) {
-				that.mqttStreams[siteId].push(buffer)
+				if (that.mqttStreams.hasOwnProperty(siteId)) that.mqttStreams[siteId].push(buffer)
+				else console.log('NOSTREAM')
 			}
 			
 			this.VAD.processAudio(buffer, 16000).then(res => {
@@ -127,12 +151,14 @@ class HermodDeepSpeechAsrService extends HermodService  {
 					case VAD.Event.ERROR:
 						break;
 					case VAD.Event.SILENCE:
+					console.log('on SILENCE')
 						if (that.isStarted) pushBuffers(siteId,buffer)
 						break;
 					case VAD.Event.NOISE:
 						if (that.isStarted) pushBuffers(siteId,buffer)
 						break;
 					case VAD.Event.VOICE:
+					console.log('on VOICE')
 						that.isStarted = true;     
 						pushBuffers(siteId,buffer)
 						// timeout once voice starts
@@ -146,10 +172,10 @@ class HermodDeepSpeechAsrService extends HermodService  {
 	
 	setupTimeout(siteId) {
 		let that = this;
-		//console.log('CREATE TIMEOUT '+siteId)
+		console.log(['CREATE TIMEOUT '+siteId,,that.props.timeout])
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 		that.asrTimeouts[siteId] = setTimeout(function() {
-			console.log(['TIMEOUT FORCE END ']) //+siteId,that.failCounts[siteId]])
+			console.log(['TIMEOUT FORCE END '+siteId])
 			//if (!that.failCounts.hasOwnProperty(siteId)) that.failCounts[siteId] = 0;
 			//that.failCounts[siteId]++;
 			//if (that.failCounts[siteId] <= that.props.maxFails) {
@@ -159,11 +185,10 @@ class HermodDeepSpeechAsrService extends HermodService  {
 				//that.startMqttListener(siteId);
 			//} else {
 				// too many fails, bail out
-				
 				that.stopAsr(siteId)
 				that.sendMqtt('hermod/'+siteId+'/asr/fail',{id:that.dialogIds[siteId]});
 			//}
-		},this.props.timeout);
+		},that.props.timeout);
 	}
 	
 	
@@ -171,16 +196,16 @@ class HermodDeepSpeechAsrService extends HermodService  {
 		return (hrtimeValue[0] + hrtimeValue[1] / 1000000000).toPrecision(4);
 	}
 
-	
-	speechCallback(transcript,siteId)  {
+
+	speechCallback(data,siteId)  {
 		let that = this;
-		console.log(['speech callback',transcript])
+		//console.log(['speech callback',JSON.stringify(data.results)])
 		if (that.asrTimeouts[siteId]) clearTimeout(that.asrTimeouts[siteId] )
 							
-		if (transcript && transcript.length > 0)  {
+		if (data.results[0] && data.results[0].alternatives[0] && data.results[0].alternatives[0].transcript.length > 0)  {
 			// don't forward text if already stopped
 			if (that.mqttStreams[siteId]) {
-				that.sendMqtt('hermod/'+siteId+'/asr/text',{id:that.dialogIds[siteId],text:transcript});
+				that.sendMqtt('hermod/'+siteId+'/asr/text',{id:that.dialogIds[siteId],text:data.results[0].alternatives[0].transcript});
 			}
 			that.stopMqttListener(siteId)
 			
@@ -203,9 +228,46 @@ class HermodDeepSpeechAsrService extends HermodService  {
 			//}
 		}
 	}
-	
 		
-	//getDetector(siteId) {
+	getDetector(siteId) {
+		let that = this;
+		var speechToText = new SpeechToTextV1({
+		  iam_apikey: that.props.SPEECH_TO_TEXT_IAM_APIKEY,
+		  url: that.props.SPEECH_TO_TEXT_URL
+		});
+
+		var params = {
+		  objectMode: false,
+		  content_type: 'audio/wav',
+		  model: 'en-US_BroadbandModel',
+		  //keywords: ['colorado', 'tornado', 'tornadoes'],
+		  //keywords_threshold: 0.5,
+		  max_alternatives: 3
+		};
+
+		// Create the stream.
+		var recognizeStream = speechToText.recognizeUsingWebSocket(params)
+		console.log('CREATED STREAM')
+		//recognizeStream.setEncoding('utf8');
+
+		// Listen for events.
+		recognizeStream.on('data', function(event) { 
+			console.log("DATA")
+			console.log(event)
+			//if (event && event.results && event.results.alternatives && event.results.alternatives.length > 0 && event.results.alternatives[0].transcript && event.results.alternatives[0].transcript.length > 0)  {
+				//speechCallback(event.results.alternatives[0].transcript,siteId) 
+			//} else {
+				//speechCallback('',siteId) 
+			//}
+		})
+		recognizeStream.on('error', function(event) { onEvent('Error:', event); });
+		recognizeStream.on('close', function(event) { onEvent('Close:', event); });
+
+		// Display events on the console.
+		function onEvent(name, event) {
+			console.log(name, JSON.stringify(event, null, 2));
+		};
+
 		
 		//// Google Speech Client
 		//const client = new speech.SpeechClient();
@@ -228,118 +290,9 @@ class HermodDeepSpeechAsrService extends HermodService  {
 		//.on('data', data => this.speechCallback(data,siteId));
 		
 		
-		//return detector;
-	//}
-	
-	getAsrModel() {
-		//if (this.asrModel) {
-			//console.log('CACHED ASR MODEL')
-			//return this.asrModel;
-		//}
-		
-		const BEAM_WIDTH = this.props.BEAM_WIDTH;
-		const LM_ALPHA = this.props.LM_ALPHA;
-		const LM_BETA = this.props.LM_BETA;
-		const N_FEATURES = this.props.N_FEATURES;
-		const N_CONTEXT = this.props.N_CONTEXT;
-		var args = this.props.files;
-		
-		console.error('Loading model from file %s', args['model']);
-		const model_load_start = process.hrtime();
-		let model = new Ds.Model(args['model'], N_FEATURES, N_CONTEXT, args['alphabet'], BEAM_WIDTH);
-		const model_load_end = process.hrtime(model_load_start);
-		console.error('Loaded model in %ds.', this.totalTime(model_load_end));
-
-		if (args['lm'] && args['trie']) {
-			console.error('Loading language model from files %s %s', args['lm'], args['trie']);
-			const lm_load_start = process.hrtime();
-			model.enableDecoderWithLM(args['alphabet'], args['lm'], args['trie'],
-				LM_ALPHA, LM_BETA);
-			const lm_load_end = process.hrtime(lm_load_start);
-			console.error('Loaded language model in %ds.', this.totalTime(lm_load_end));
-		}
-		
-		return model;
+		return recognizeStream;
 	}
-
-	finishStream(siteId) {
-		console.log(['FINISH STREAM'])
-		let that = this;
-		let model = this.models[siteId]
-		let sctx = this.sctx[siteId]
-		if (that.startTimeout) clearTimeout(that.startTimeout);
-		try {
-			const model_load_start = process.hrtime();
-			let transcription = model.finishStream(sctx);
-			this.sctx[siteId] = this.models[siteId].setupStream(150, 16000);
-			console.log('transcription:'+ transcription);
-			this.speechCallback(transcription,siteId)
-			const model_load_end = process.hrtime(model_load_start);
-			console.error('Inference took %ds.', that.totalTime(model_load_end));
-			//that.stopMqttListener(siteId);
-		} catch (e) {
-			console.log(['FINISH STREAM ERROR',e])
-		}
-	}
-	
-	getDetector(siteId) {
-		//if (this.models[siteId]) {
-			//console.log('CACHED ASR MODEL')
-			//return this.models[siteId];
-		//}
-				console.log(['GET DETECTOR'])
-
-		//if (!this.models[siteId]) 
-		this.models[siteId] = this.getAsrModel();
-		// secondary VAD to trigger transcript events
-		const vad = new VAD(VAD.Mode.NORMAL);
-		let that = this;
-		const voice = {START: true, STOP: false};
-		this.sctx[siteId] = this.models[siteId].setupStream(150, 16000);
-		let state = voice.START;
-		
-		let detector = new Writable();
-		var silenceCount = 0;
-		detector._write = function(chunk,encoding,cb) {
-			try {
-				console.log('audio in')
-				vad.processAudio(chunk, 16000).then(res => {
-					switch (res) {
-						case VAD.Event.ERROR:
-							console.log('audio in error')
-							break;
-							
-						case VAD.Event.SILENCE:
-							silenceCount++;
-							if (state === voice.START && silenceCount > 40) { //30
-								state = voice.STOP;
-								silenceCount = 0;
-								that.finishStream(siteId,that.models[siteId],that.sctx[siteId]);
-							} else {
-								that.models[siteId].feedAudioContent(that.sctx[siteId], chunk.slice(0, chunk.length / 2));
-							}
-							console.log('audio in silent')
-							break;
-						case VAD.Event.VOICE:
-						case VAD.Event.NOISE:
-							// restart mic
-							silenceCount = 0;
-							state = voice.START;
-							that.models[siteId].feedAudioContent(that.sctx[siteId], chunk.slice(0, chunk.length / 2));
-							console.log('audio in voice')
-							break;
-					}
-				});
-				cb()
-			} catch (e) {
-				console.log(['STREAM ERROR',e])
-			}
-		}
-		return detector;
-	}
-	
-	
 
 }     
 
-module.exports = HermodDeepSpeechAsrService 
+module.exports = HermodIbmWatsonAsrService 

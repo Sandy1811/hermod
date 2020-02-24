@@ -15,34 +15,14 @@ class HermodGoogleTtsService extends HermodService  {
 				if (payload.text && payload.text.length > 0 ) {
 					that.say(payload.text,siteId,payload)
 				}
-            }
+            },
         }
         this.say = this.say.bind(this)
         this.manager = this.connectToManager('TTS',props.manager,eventFunctions);
     }  
         
-  
-  
-  //function sendLongTTSRecursive(messageParts,siteId,manager) {
-	//return new Promise(function(resolve,reject) {
-		//if (messageParts.length > 0) {
-			//let nextMessage = messageParts.shift()
-			//let callbacks = {}
-			//callbacks['hermod/'+siteId+'/tts/finished'] = function() {
-				//if (messageParts.length === 0) {
-					//resolve(textResponse(nextMessage)) 
-				//} else {
-					//sendLongTTSRecursive(messageParts,siteId,manager)
-				//}
-			//}
-			//// automatic cleanup after single message with true parameter
-			//manager.addCallbacks('TTS',callbacks,true)	
-			//manager.sendMqtt('hermod/'+siteId+'/tts/say',{text:nextMessage})
-		//}
-	//})
-//}
-  
 
+ 
    /**
      * Synthesise speech from text and send to to audio output
      */ 

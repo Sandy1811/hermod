@@ -15,9 +15,8 @@ class HermodSubscriptionManager  extends HermodMqttServer {
         if (!this.props.siteId || this.props.siteId.length === 0) {
             throw "Subscription manager must be configured with a siteId property";
         }
-    }   
-    
-    
+    }
+
     addSubscription(topic,callback,oneOff = false) {
 		if (topic && topic.length && typeof callback === "function") {
 			let subscriptionId = parseInt(Math.random()*100000000,10);
@@ -27,7 +26,7 @@ class HermodSubscriptionManager  extends HermodMqttServer {
 				topicSubscription = this.subscriptions[topic]
 			} else {
 				// real subscription when first created
-				this.mqttClient.subscribe(topic)
+				this.subscribe(topic)
 			}
 			topicSubscription[subscriptionId] = {oneOff:oneOff,callBack:callback}
 			this.subscriptions[topic] = topicSubscription;
@@ -50,7 +49,7 @@ class HermodSubscriptionManager  extends HermodMqttServer {
 		}
 		// unsub and cleanup if no more subscriptions on  this topic
 		if (this.subscriptions.hasOwnProperty(topic) && Object.keys(this.subscriptions[topic]).length == 0) {
-			this.mqttClient.unsubscribe(topic);
+			this.unsubscribe(topic);
 			delete this.subscriptions[topic];
 		}
 	}
@@ -64,7 +63,7 @@ class HermodSubscriptionManager  extends HermodMqttServer {
 		- subscribe to relevant topics (allowing for siteId)
 		- save callbacks for onMessageArrived
      */
-   addCallbacks(service,eventCallbackFunctions,oneOff = false,subscribeAll=true,siteId) {
+   addCallbacks(service,eventCallbackFunctions,oneOff = false,subscribeAll=true,siteId,timeout) {
 	   if (!siteId) siteId = this.props.siteId;
 		//console.log(['MANAGER ADDCALLBACKS',service,subscribeAll,eventCallbackFunctions])
         let that = this;
